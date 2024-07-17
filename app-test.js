@@ -6,6 +6,32 @@ const app = express()
 app.use(express.json())
 
 let db
+// users = [
+//   {
+//     user_id: '1',
+//     nickname: 'naruto',
+//     fisrt_name: 'naruto',
+//     last_name: 'uzumaki',
+//     password: '11223344',
+//     gender: 'male',
+//     email: 'naruto@gmail.com',
+//     age: 12,
+//     interest: ['hokage', 'shipuden'],
+//   },
+//   {
+//     user_id: '2',
+//     nickname: 'Tobi',
+//     fisrt_name: 'madara',
+//     last_name: 'uchiha',
+//     password: '11223344',
+//     gender: 'male',
+//     email: 'madara@gmail.com',
+//     birthday: 50,
+//     interest: ['tzkuyomi', 'king'],
+//   },
+// ]
+
+// posrt selection
 
 connectToDb((err) => {
   if (!err) {
