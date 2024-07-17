@@ -1,7 +1,7 @@
 
 
 
-export let aboutTxt = `About Page Content for GameGrid
+let aboutTxt = `About Page Content for GameGrid
 About GameGrid
 Welcome to GameGrid (GG), the ultimate social media platform designed specifically for gamers! Our mission is to create a vibrant and engaging community where gamers from all around the world can connect, share, and compete. With features tailored to enhance the gaming experience, GameGrid is more than just a social network; it's a hub for gamers to thrive.
 
@@ -25,3 +25,14 @@ Join us on this exciting journey and be a part of the GameGrid community!
 
 Feel free to modify any section to better suit your team's needs or to add more information about your project.`
 
+
+
+
+
+
+
+
+module.exports = {
+    aboutTxt,
+  };
+  

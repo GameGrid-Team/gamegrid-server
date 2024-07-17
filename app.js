@@ -4,7 +4,7 @@ const { connectToDb, getDb } = require('./db')
 const { ObjectId } = require('mongodb')
 const app = express()
 app.use(express.json())
-import {aboutTxt} from `/fixture/general_text`
+const generalTexts = require('./fixture/general_text');
 let db
 
 
@@ -14,10 +14,10 @@ app.listen(port, () => console.log(`Listening on port ${port}`))
 
 
 app.get('/about',(req,res)=>{
-  res.send(aboutTxt)
+  res.send(generalTexts.aboutTxt)
 })
-
-let hey
-
+app.get('/ping',(req,res)=>{
+  res.send('pong I LOVE U')
+})
 
 
