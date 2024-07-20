@@ -12,11 +12,11 @@ export default [
     'no-var':['error']
   },
   ignores: [
-    'node_modules/**',
-    'dist/**',
-    'build/**',
-    'coverage/**',
-    '.env',
+    '/node_modules/**',
+    '/dist/**',
+    '/build/**',
+    '/coverage/**',
+    '/.env',
   ],
 
   },
