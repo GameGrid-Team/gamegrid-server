@@ -28,10 +28,6 @@ Feel free to modify any section to better suit your team's needs or to add more 
 
 
 
-
-
-
-
 module.exports = {
     aboutTxt,
   };

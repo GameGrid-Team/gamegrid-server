@@ -1,14 +1,13 @@
 const express = require('express')
 const Joi = require('joi')
 const cors = require('cors')
-
 // const { connectToDb, getDb } = require('./db')
 // const { ObjectId } = require('mongodb')
-
 const app = express()
 app.use(express.json())
 const generalTexts = require('./fixture/general_text')
 // let db
+
 const port = process.env.PORT || 3001
 app.listen(port, () => console.log(`Listening on port ${port}`))
 
@@ -29,7 +28,6 @@ app.post('/api/login', (req, res) => {
   const user = {
     email: req.body.email,
     password: req.body.password,
-    test: 'test',
   }
   res.status(200).json(user)
 })
