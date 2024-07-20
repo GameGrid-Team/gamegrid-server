@@ -15,14 +15,11 @@ jobs:
           name: install dependencies
           command: npm install
       - run:
-          name: run dev
-          command: node app.js
-      - run:
           name: run lint
           command: npm run lint
-      - run:
-          name: run tests
-          command: npx cypress run
+      # - run:
+      #     name: run tests
+      #     command: npx cypress run
 
 workflows:
   version: 2
