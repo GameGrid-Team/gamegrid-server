@@ -1,4 +1,3 @@
-
 describe('About page', () => {
   it('if the about text is correct', () => {
     const testText = `About Page Content for GameGrid
@@ -24,9 +23,6 @@ At GameGrid, we believe that gaming is more than just a hobby; it's a way of lif
 Join us on this exciting journey and be a part of the GameGrid community!
 
 Feel free to modify any section to better suit your team's needs or to add more information about your project.`
-    cy.request('/about').its('body').should('equal',testText)
-
+    cy.request('/about').its('body').should('equal', testText)
   })
 })
-
-
