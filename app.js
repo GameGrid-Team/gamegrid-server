@@ -16,8 +16,20 @@ const port = process.env.PORT || 3001
 app.listen(port, () => console.log(`Listening on port ${port}`))
 
 app.get('/api/about', (req, res) => {
-  res.send([generalTexts.aboutTxt])
+  res.json([generalTexts.aboutTxt])
 })
 app.get('/api/ping', (req, res) => {
-  res.send(['pong I LOVE U'])
+  res.json(['pong I LOVE U'])
+})
+
+app.post('/api/users', (req, res) => {
+  if (!req.body.nickname) {
+    res.status(400).json({ error: 'Name is required be min of 3 characters' })
+    return
+  }
+  const user = {
+    nickname: req.body.nickname,
+    password: req.body.password,
+  }
+  res.status(200).json(user)
 })
