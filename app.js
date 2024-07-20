@@ -8,7 +8,6 @@ const generalTexts = require('./fixture/general_text');
 let db
 
 
-
 const port = process.env.PORT || 3000
 app.listen(port, () => console.log(`Listening on port ${port}`))
 

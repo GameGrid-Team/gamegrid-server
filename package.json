@@ -4,7 +4,9 @@
   "description": "Backend server for sochial netwarck gamegrid",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon app",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint cypress/e2e/*"
   },
   "author": "",
   "license": "ISC",
@@ -20,6 +22,8 @@
     "tabWidth": 2
   },
   "devDependencies": {
-    "eslint": "^9.7.0"
+    "cypress": "^13.13.1",
+    "eslint": "^9.7.0",
+    "globals": "^15.8.0"
   }
 }
