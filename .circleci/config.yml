@@ -36,7 +36,9 @@ jobs:
               libnss3-tools
       - run:
           name: run tests
-          command: npx cypress run
+          command: |
+            set -o pipefail
+            npx cypress run
       - run:
           name: run lint
           command: npm run lint
