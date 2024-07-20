@@ -1,19 +1,18 @@
 const express = require('express')
 const Joi = require('joi')
-var cors = require('cors')
+const cors = require('cors')
 
-const { connectToDb, getDb } = require('./db')
-const { ObjectId } = require('mongodb')
+// const { connectToDb, getDb } = require('./db')
+// const { ObjectId } = require('mongodb')
 
 const app = express()
 app.use(express.json())
 const generalTexts = require('./fixture/general_text')
-let db
-
-app.use(cors())
-
+// let db
 const port = process.env.PORT || 3001
 app.listen(port, () => console.log(`Listening on port ${port}`))
+
+app.use(cors())
 
 app.get('/api/about', (req, res) => {
   res.json([generalTexts.aboutTxt])
@@ -22,14 +21,15 @@ app.get('/api/ping', (req, res) => {
   res.json(['pong I LOVE U'])
 })
 
-app.post('/api/users', (req, res) => {
-  if (!req.body.nickname) {
-    res.status(400).json({ error: 'Name is required be min of 3 characters' })
+app.post('/api/login', (req, res) => {
+  if (!req.body.email) {
+    res.status(400).json({ error: 'Name is required be' })
     return
   }
   const user = {
-    nickname: req.body.nickname,
+    email: req.body.email,
     password: req.body.password,
+    test: 'test',
   }
   res.status(200).json(user)
 })
