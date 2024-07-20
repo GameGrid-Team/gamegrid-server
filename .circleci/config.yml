@@ -6,7 +6,7 @@ orbs:
   node: circleci/node@5
 
 jobs:
-  build-test:
+  backend-pipeline:
     executor:
       name: node/default
     steps:
@@ -14,9 +14,6 @@ jobs:
       - run:
           name: install dependencies
           command: npm install
-      - run:
-          name: run build
-          command: npm run build
       - run:
           name: run tests
           command: npx cypress run
@@ -28,4 +25,4 @@ workflows:
   version: 2
   my-workflow:
     jobs:
-      - build-test
+      - backend-pipeline

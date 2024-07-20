@@ -15,7 +15,7 @@ app.listen(port, () => console.log(`Listening on port ${port}`))
 app.use(cors())
 
 app.get('/api/about', (req, res) => {
-  res.json([generalTexts.aboutTxt])
+  res.json({aboutText:generalTexts.aboutTxt})
 })
 app.get('/api/ping', (req, res) => {
   res.json(['pong I LOVE U'])
