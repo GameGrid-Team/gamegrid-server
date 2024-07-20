@@ -38,6 +38,7 @@ jobs:
           name: run tests
           command: |
             set -o pipefail
+            node app.js &
             npx cypress run
       - run:
           name: run lint
