@@ -12,7 +12,7 @@ export default [
     'no-var':['error']
   },
   ignores: [
-    '/node_modules/**',
+    './node_modules/**',
     '/dist/**',
     '/build/**',
     '/coverage/**',
