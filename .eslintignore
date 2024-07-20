@@ -2,12 +2,15 @@
 
 node_modules
 
-<!-- # Ignore build directories
+# Ignore build directories
+
 dist
 build
 
 # Ignore coverage directory
+
 coverage
 
 # Ignore environment-specific configuration files
-.env -->
+
+.env
