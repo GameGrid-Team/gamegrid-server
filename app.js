@@ -17,7 +17,7 @@ app.get('/api/about', (req, res) => {
   res.json({ aboutText: generalTexts.aboutTxt })
 })
 app.get('/api/ping', (req, res) => {
-  res.json(['pong I LOVE U'])
+  res.json(['pong I LOVE U 7'])
 })
 
 app.post('/api/login', (req, res) => {
