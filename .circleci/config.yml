@@ -11,9 +11,9 @@ jobs:
       - checkout
       - node/install-packages:
           pkg-manager: npm
-      - run:
-          name: Run tests
-          command: echo \"No test specified in package.json\"
+      # - run:
+      #     name: Run tests
+      #     command: echo \"No test specified in package.json\"
   deploy:
     # This is an example deploy job, not actually used by the workflow
     docker:
