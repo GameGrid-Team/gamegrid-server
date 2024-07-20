@@ -35,11 +35,11 @@ jobs:
               libcanberra-gtk* \
               libnss3-tools
       - run:
-          name: run lint
-          command: npm run lint
-      - run:
           name: run tests
           command: npx cypress run
+      - run:
+          name: run lint
+          command: npm run lint
 
 workflows:
   version: 2
