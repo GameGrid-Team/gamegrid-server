@@ -34,6 +34,9 @@ jobs:
               libxtst6 \
               libcanberra-gtk* \
               libnss3-tools
+    - run: 
+            name: npm start
+            command: npm start &
       - run:
           name: run tests
           command: |
