@@ -15,6 +15,9 @@ jobs:
           name: install dependencies
           command: npm install
       - run:
+          name: run lint
+          command: npm run lint
+      - run:
           name: install Xvfb
           command: |
             sudo apt-get update
@@ -40,9 +43,6 @@ jobs:
             set -o pipefail
             node app.js &
             npx cypress run
-      - run:
-          name: run lint
-          command: npm run lint
 
 workflows:
   version: 2
