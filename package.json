@@ -6,7 +6,8 @@
   "scripts": {
     "start": "nodemon app",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint cypress/e2e/*"
+    "lint": "eslint ./**/*.js"
+    
   },
   "author": "",
   "license": "ISC",
