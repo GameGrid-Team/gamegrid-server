@@ -20,19 +20,29 @@ connectToDb((err) => {
 
 app.use(cors())
 
-app.get('/api/users', (req, res) => {
-  let users = []
-  db.collection('users')
+app.post('/api/users', (req, res) => {
+  const reqUser = req.body
+  const nickname = reqUser.nickname
+  const email = reqUser.email
+  const usersDB = db.collection('users')
+  console.log(`User ${nickname}`)
+
+  usersDB
     .find()
-    .ni.forEach((user) => {
-      users.push(user)
-      if (user.nickname === 'naruto') console.log('User:::::: ', user)
+    .forEach((user) => {
+      console.log('User', user)
+      if (user.nickname === nickname) {
+        res.status(404).json({ error: 'Nickname is taken', field: 'nickname' })
+      }
+      if (user.email === email) {
+        res.status(404).json({ error: 'Email is taken', field: 'email' })
+      }
     })
     .then(() => {
-      res.status(200).json(users)
+      res.status(200).json(user)
     })
     .catch(() => {
-      res.status(500).json({ error: "Couldn't find users from list" })
+      res.status(500).json({ error: "Couldn't connect to DB" })
     })
 })
 
