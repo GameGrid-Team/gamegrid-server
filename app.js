@@ -21,6 +21,9 @@ connectToDb((err) => {
 app.use(cors())
 
 app.post('/api/users', (req, res) => {
+  let errors = { errors: [] }
+  let flagNick = 0
+  let flagEmail = 0
   const reqUser = req.body
   const nickname = reqUser.nickname
   const email = reqUser.email
@@ -32,14 +35,20 @@ app.post('/api/users', (req, res) => {
     .forEach((user) => {
       console.log('User', user)
       if (user.nickname === nickname) {
-        res.status(404).json({ error: 'Nickname is taken', field: 'nickname' })
+        errors.errors.push({ message: 'Nickname is taken', field: 'nickname' })
+        flagNick = 1
       }
       if (user.email === email) {
-        res.status(404).json({ error: 'Email is taken', field: 'email' })
+        errors.errors.push({ message: 'Email is taken', field: 'email' })
+        flagEmail = 1
       }
     })
     .then(() => {
-      res.status(200).json(user)
+      if (flagEmail + flagNick) {
+        res.status(404).json(errors)
+      } else {
+        res.status(200).json(user)
+      }
     })
     .catch(() => {
       res.status(500).json({ error: "Couldn't connect to DB" })
