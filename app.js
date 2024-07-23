@@ -21,7 +21,7 @@ connectToDb((err) => {
 app.use(cors())
 
 app.post('/api/users', (req, res) => {
-  let errors = { errors: [] }
+  let errorList = { errors: [] }
   let flagNick = 0
   let flagEmail = 0
   const reqUser = req.body
@@ -35,17 +35,17 @@ app.post('/api/users', (req, res) => {
     .forEach((user) => {
       console.log('User', user)
       if (user.nickname === nickname) {
-        errors.errors.push({ message: 'Nickname is taken', field: 'nickname' })
+        errorList.errors.push({ message: 'Nickname is taken', field: 'nickname' })
         flagNick = 1
       }
       if (user.email === email) {
-        errors.errors.push({ message: 'Email is taken', field: 'email' })
+        errorList.errors.push({ message: 'Email is taken', field: 'email' })
         flagEmail = 1
       }
     })
     .then(() => {
       if (flagEmail + flagNick) {
-        res.status(404).json(errors)
+        res.status(404).json(errorList)
       } else {
         res.status(200).json(user)
       }
