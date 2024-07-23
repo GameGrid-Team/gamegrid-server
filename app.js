@@ -20,6 +20,7 @@ connectToDb((err) => {
 
 app.use(cors())
 
+//  Oרriginal
 app.post('/api/user', (req, res) => {
   let errorList = { errors: [] }
   const reqUser = req.body
@@ -50,6 +51,38 @@ app.post('/api/user', (req, res) => {
       res.status(500).json({ error: "Couldn't connect to DB" })
     })
 })
+
+//testt
+// app.post('/api/user', (req, res) => {
+//   let err = { error: 'Some fields are incorect', emailCheck: 0, nickCheck: 0 }
+//   const reqUser = req.body
+//   const nickname = reqUser.nickname
+//   const email = reqUser.email
+//   const usersDB = db.collection('users')
+
+//   usersDB
+//     .find()
+//     .forEach((user) => {
+//       console.log('User', user)
+//       if (user.nickname === nickname) {
+//         err.nickCheck = 1
+//       }
+//       if (user.email === email) {
+//         err.emailCheck = 1
+//       }
+//     })
+//     .then(() => {
+//       if (err.emailCheck === 1 || err.nickCheck === 1) {
+//         res.status(404).json(err)
+//       } else {
+//         usersDB.insertOne(reqUser)
+//         res.status(200).json(reqUser)
+//       }
+//     })
+//     .catch(() => {
+//       res.status(500).json({ error: "Couldn't connect to DB" })
+//     })
+// })
 
 app.get('/api/about', (req, res) => {
   res.json({ aboutText: generalTexts.aboutTxt })
