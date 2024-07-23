@@ -39,8 +39,7 @@ app.post('/api/user', (req, res) => {
       }
     })
     .then(() => {
-      console.log(errorList.errors > 0)
-      if (flagEmail + flagNick) {
+      if (errorList.errors.length > 0) {
         res.status(404).json(errorList)
       } else {
         usersDB.insertOne(reqUser)
