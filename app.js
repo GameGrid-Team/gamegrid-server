@@ -20,15 +20,12 @@ connectToDb((err) => {
 
 app.use(cors())
 
-app.post('/api/users', (req, res) => {
+app.post('/api/user', (req, res) => {
   let errorList = { errors: [] }
-  let flagNick = 0
-  let flagEmail = 0
   const reqUser = req.body
   const nickname = reqUser.nickname
   const email = reqUser.email
   const usersDB = db.collection('users')
-  console.log(`User ${nickname}`)
 
   usersDB
     .find()
@@ -36,18 +33,18 @@ app.post('/api/users', (req, res) => {
       console.log('User', user)
       if (user.nickname === nickname) {
         errorList.errors.push({ message: 'Nickname is taken', field: 'nickname' })
-        flagNick = 1
       }
       if (user.email === email) {
         errorList.errors.push({ message: 'Email is taken', field: 'email' })
-        flagEmail = 1
       }
     })
     .then(() => {
+      console.log(errorList.errors > 0)
       if (flagEmail + flagNick) {
         res.status(404).json(errorList)
       } else {
-        res.status(200).json(user)
+        usersDB.insertOne(reqUser)
+        res.status(200).json(reqUser)
       }
     })
     .catch(() => {
