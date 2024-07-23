@@ -20,7 +20,7 @@ connectToDb((err) => {
 
 app.use(cors())
 
-//  Oרriginal
+//  Original
 app.post('/api/user', (req, res) => {
   let errorList = { errors: [] }
   const reqUser = req.body
