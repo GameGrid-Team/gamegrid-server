@@ -1,0 +1,16 @@
+# Ignore node_modules
+
+/node_modules
+
+# Ignore build directories
+
+/dist
+/build
+
+# Ignore coverage directory
+
+/coverage
+
+# Ignore environment-specific configuration files
+
+/.env
