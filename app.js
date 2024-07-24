@@ -24,7 +24,7 @@ app.use(cors())
 
 
 
-//insert registration
+//insert user
 app.post('/api/user/insert', (req, res) => {
   let err = { error: 'the value of the fields equal to 1 are taken', emailCheck: 0, nickCheck: 0 }
   const reqUser = req.body
@@ -75,7 +75,7 @@ app.delete('/api/user/:id/delete', (req, res) => {
 })
 
 
-//update registration
+//update user
 app.post('/api/user/:id/update', (req, res) => {  
   const userID = req.params.id
   const usersDB = db.collection('users')
@@ -92,14 +92,7 @@ app.post('/api/user/:id/update', (req, res) => {
   })
 })
 
-
-app.get('/api/about', (req, res) => {
-  res.json({ aboutText: generalTexts.aboutTxt })
-})
-app.get('/api/ping', (req, res) => {
-  res.json(['pong I LOVE U 7'])
-})
-
+//user login
 app.get('/api/login', (req, res) => {
   //{email: #####,pass:#######}/{nickname: #####,pass:#######}
   const user = req.body
@@ -114,6 +107,16 @@ app.get('/api/login', (req, res) => {
 
   })
 })
+
+app.get('/api/about', (req, res) => {
+  res.json({ aboutText: generalTexts.aboutTxt })
+})
+app.get('/api/ping', (req, res) => {
+  res.json(['pong I LOVE U 7'])
+})
+
+
+
 
 
 
