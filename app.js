@@ -21,40 +21,8 @@ connectToDb((err) => {
 app.use(cors())
 
 //  Original
-app.post('/api/user', (req, res) => {
-  let errorList = { errors: [] }
-  const reqUser = req.body
-  const nickname = reqUser.nickname
-  const email = reqUser.email
-  const usersDB = db.collection('users')
-
-  usersDB
-    .find()
-    .forEach((user) => {
-      console.log('User', user)
-      if (user.nickname === nickname) {
-        errorList.errors.push({ message: 'Nickname is taken', field: 'nickname' })
-      }
-      if (user.email === email) {
-        errorList.errors.push({ message: 'Email is taken', field: 'email' })
-      }
-    })
-    .then(() => {
-      if (errorList.errors.length > 0) {
-        res.status(404).json(errorList)
-      } else {
-        usersDB.insertOne(reqUser)
-        res.status(200).json(reqUser)
-      }
-    })
-    .catch(() => {
-      res.status(500).json({ error: "Couldn't connect to DB" })
-    })
-})
-
-//testt
 // app.post('/api/user', (req, res) => {
-//   let err = { error: 'Some fields are incorect', emailCheck: 0, nickCheck: 0 }
+//   let errorList = { errors: [] }
 //   const reqUser = req.body
 //   const nickname = reqUser.nickname
 //   const email = reqUser.email
@@ -65,15 +33,15 @@ app.post('/api/user', (req, res) => {
 //     .forEach((user) => {
 //       console.log('User', user)
 //       if (user.nickname === nickname) {
-//         err.nickCheck = 1
+//         errorList.errors.push({ message: 'Nickname is taken', field: 'nickname' })
 //       }
 //       if (user.email === email) {
-//         err.emailCheck = 1
+//         errorList.errors.push({ message: 'Email is taken', field: 'email' })
 //       }
 //     })
 //     .then(() => {
-//       if (err.emailCheck === 1 || err.nickCheck === 1) {
-//         res.status(404).json(err)
+//       if (errorList.errors.length > 0) {
+//         res.status(404).json(errorList)
 //       } else {
 //         usersDB.insertOne(reqUser)
 //         res.status(200).json(reqUser)
@@ -83,6 +51,65 @@ app.post('/api/user', (req, res) => {
 //       res.status(500).json({ error: "Couldn't connect to DB" })
 //     })
 // })
+
+// add user
+app.post('/api/user', (req, res) => {
+  let err = { error: 'Some fields are incorect', emailCheck: 0, nickCheck: 0 }
+  const reqUser = req.body
+  const nickname = reqUser.nickname
+  const email = reqUser.email
+  const usersDB = db.collection('users')
+
+  usersDB
+    .find()
+    .forEach((user) => {
+      console.log('User', user)
+      if (user.nickname === nickname) {
+        err.nickCheck = 1
+      }
+      if (user.email === email) {
+        err.emailCheck = 1
+      }
+    })
+    .then(() => {
+      if (err.emailCheck === 1 || err.nickCheck === 1) {
+        res.status(404).json(err)
+      } else {
+        usersDB.insertOne(reqUser)
+        res.status(200).json(reqUser)
+      }
+    })
+    .catch(() => {
+      res.status(500).json({ error: "Couldn't connect to DB" })
+    })
+})
+// delete user
+app.delete('/api/user', (req, res) => {
+  let err = { error: 'User not exist' }
+  const reqUser = req.body
+  const userID = ObjectId(reqUser._id)
+  const email = reqUser.email
+  const usersDB = db.collection('users')
+
+  usersDB
+    .find()
+    .forEach((user) => {
+      console.log('User', user)
+      if (user._id === userID) {
+      }
+    })
+    .then(() => {
+      if (err.emailCheck === 1 || err.nickCheck === 1) {
+        res.status(404).json(err)
+      } else {
+        usersDB.insertOne(reqUser)
+        res.status(200).json(reqUser)
+      }
+    })
+    .catch(() => {
+      res.status(500).json({ error: "Couldn't connect to DB" })
+    })
+})
 
 app.get('/api/about', (req, res) => {
   res.json({ aboutText: generalTexts.aboutTxt })
