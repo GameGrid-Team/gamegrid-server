@@ -7,7 +7,7 @@ module.exports = {
   connectToDb: (cb) => {
     MongoClient.connect(uri)
       .then((client) => {
-        dbConnection = client.db()
+        dbConnection = client.db('Gamegrid')
         return cb()
       })
       .catch((err) => {
@@ -15,6 +15,5 @@ module.exports = {
         return cb(err)
       })
   },
-
   getDb: () => dbConnection,
 }
