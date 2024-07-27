@@ -118,7 +118,6 @@ app.get('/api/ping', (req, res) => {
   res.json(['pong I LOVE U 3'])
 })
 
-<<<<<<< HEAD
 app.post('/api/login', (req, res) => {
   if (!req.body.email) {
     res.status(400).json({ error: 'Name is required be' })
@@ -131,43 +130,3 @@ app.post('/api/login', (req, res) => {
   res.status(200).json(user)
 })
 
-=======
-
-
-
-
-
-
-
-//  Original
-// app.post('/api/user', (req, res) => {
-//   let errorList = { errors: [] }
-//   const reqUser = req.body
-//   const nickname = reqUser.nickname
-//   const email = reqUser.email
-//   const usersDB = db.collection('users')
-
-//   usersDB
-//     .find()
-//     .forEach((user) => {
-//       console.log('User', user)
-//       if (user.nickname === nickname) {
-//         errorList.errors.push({ message: 'Nickname is taken', field: 'nickname' })
-//       }
-//       if (user.email === email) {
-//         errorList.errors.push({ message: 'Email is taken', field: 'email' })
-//       }
-//     })
-//     .then(() => {
-//       if (errorList.errors.length > 0) {
-//         res.status(404).json(errorList)
-//       } else {
-//         usersDB.insertOne(reqUser)
-//         res.status(200).json(reqUser)
-//       }
-//     })
-//     .catch(() => {
-//       res.status(500).json({ error: "Couldn't connect to DB" })
-//     })
-// })
->>>>>>> fcceba108efb63485f0958eec129ba2f2b1a2d22
