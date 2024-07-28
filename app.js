@@ -87,11 +87,14 @@ app.post('/api/user/:id/update', (req, res) => {
 //user login
 app.get('/api/login', (req, res) => {
   //{email: #####,pass:#######}/{nickname: #####,pass:#######}
-  const user = req.body
+  const { email, nickname, password } = req.query
+  let filter = { password }
+  if (email) filter.email = email
+  if (nickname) filter.nickname = nickname
   const usersDB = db.collection('users')
 
   usersDB
-    .findOne(user)
+    .findOne(filter)
     .then((user) => {
       res.status(200).json({ userid: user._id.toString(), message: 'login successful' })
     })
