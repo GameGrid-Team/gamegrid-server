@@ -53,7 +53,6 @@ app.post('/api/user/insert', (req, res) => {
 })
 
 //user deletion
-// 6697d55e5bc67c001a0c738c
 app.delete('/api/user/:id/delete', (req, res) => {
   let err = { error: 'user does not exist' }
   const userID = req.params.id
@@ -83,6 +82,7 @@ app.post('/api/user/:id/update', (req, res) => {
       res.status(404).json({ error: 'Update Failed' })
     })
 })
+// delete post
 
 //user login
 app.get('/api/login', (req, res) => {
@@ -102,23 +102,57 @@ app.get('/api/login', (req, res) => {
       res.status(404).json({ error: 'Login Failed' })
     })
 })
-//user creat post
-app.post('/api/user/:id/post/insert', (req, res) => {
-  let err = { error: 'the value of the fields equal to 1 are taken', emailCheck: 0, nickCheck: 0 }
-  const reqUser = req.body
+//Insert post
+app.post('/api/users/:id/post/insert', (req, res) => {
+  let err = { error: 'Faild to upload post' }
+  const postBody = req.body
   const usersDB = db.collection('users')
   const postDB = db.collection('posts')
   usersDB
     .findOne({ _id: new ObjectId(req.params.id) })
     .then(() => {
-      reqUser.userid = new ObjectId(req.params.id)
-      postDB.insertOne(reqUser)
+      postBody.userid = new ObjectId(req.params.id)
+      postBody.timestamp = new Date()
+      postDB.insertOne(postBody)
       res.status(200).json({ message: 'Post create Successfully' })
     })
     .catch(() => {
       res.status(404).json(err)
     })
 })
+
+//post update
+app.post('/api/posts/:id/post/update', (req, res) => {
+  let err = { error: 'Faild to update post' }
+  const postID = req.params.id
+  const updateBody = req.body
+  const postDB = db.collection('posts')
+  postDB
+    .updateOne({ _id: new ObjectId(postID) }, { $set: updateBody })
+    .then(() => {
+      res.status(200).json({ message: 'Post updated Successfully' })
+    })
+    .catch(() => {
+      res.status(404).json(err)
+    })
+})
+
+//Delete post
+app.delete('/api/posts/:id/post/delete', (req, res) => {
+  let err = { error: 'Failed to delete post' }
+  const postID = req.params.id
+  const postDB = db.collection('posts')
+
+  postDB
+    .deleteOne({ _id: new ObjectId(postID) })
+    .then(() => {
+      res.status(200).json({ message: 'Post Removed Successfully' })
+    })
+    .catch(() => {
+      res.status(404).json(err)
+    })
+})
+
 //user get post list
 app.get('/api/user/:id/posts', (req, res) => {
   const userId = req.params.id
@@ -137,10 +171,11 @@ app.get('/api/user/:id/posts', (req, res) => {
       res.status(404).json({ error: 'error' })
     })
 })
-
+//Get about page text
 app.get('/api/about', (req, res) => {
   res.json({ aboutText: generalTexts.aboutTxt })
 })
+
 app.get('/api/ping', (req, res) => {
   res.json(['pong I LOVE U 7'])
 })
