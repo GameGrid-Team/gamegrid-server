@@ -74,6 +74,7 @@ module.exports = (db) => {
       })
   })
 
+  // like post
   router.get('/:postid/:userid/like', (req, res) => {
     const userId = req.params.userid
     const postId = req.params.postid
@@ -98,29 +99,31 @@ module.exports = (db) => {
     })
   })
 
-  router.get('/:postid/:userid/unlike', (req, res) => {
-    const userId = req.params.userid
-    const postId = req.params.postid
-    postDB.findOne({ _id: new ObjectId(postId) }).then((post) => {
-      usersDB
-        .findOne({ _id: post.userid })
-        .then((user) => {
-          post.likes.count -= 1
-          post.likes.users.pop(userId)
-          user.social.rank.exp -= 3
+  // unlike post
+  //   router.get('/:postid/:userid/unlike', (req, res) => {
+  //     const userId = req.params.userid
+  //     const postId = req.params.postid
+  //     postDB.findOne({ _id: new ObjectId(postId) }).then((post) => {
+  //       usersDB
+  //         .findOne({ _id: post.userid })
+  //         .then((user) => {
+  //           post.likes.count -= 1
+  //           post.likes.users.pop(userId)
+  //           user.social.rank.exp -= 3
+  //           //   if (user.social.rank.exp < 0) return { error: 'Exp cannot be lower than 0.' }
 
-          user.social = general.checkRank(user.social.rank.exp)
+  //           user.social = general.checkRank(user.social.rank.exp)
 
-          postDB.updateOne({ _id: new ObjectId(postId) }, { $set: post })
-          usersDB.updateOne({ _id: new ObjectId(post.userid) }, { $set: user })
+  //           postDB.updateOne({ _id: new ObjectId(postId) }, { $set: post })
+  //           usersDB.updateOne({ _id: new ObjectId(post.userid) }, { $set: user })
 
-          res.status(200).json(post)
-        })
-        .catch(() => {
-          res.status(400).json({ error: 'error' })
-        })
-    })
-  })
+  //           res.status(200).json(post)
+  //         })
+  //         .catch(() => {
+  //           res.status(400).json({ error: 'error' })
+  //         })
+  //     })
+  //   })ך
 
   return router
 }
