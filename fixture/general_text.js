@@ -1,6 +1,3 @@
-
-
-
 let aboutTxt = `About Page Content for GameGrid
 About GameGrid
 Welcome to GameGrid (GG), the ultimate social media platform designed specifically for gamers! Our mission is to create a vibrant and engaging community where gamers from all around the world can connect, share, and compete. With features tailored to enhance the gaming experience, GameGrid is more than just a social network; it's a hub for gamers to thrive.
@@ -25,10 +22,16 @@ Join us on this exciting journey and be a part of the GameGrid community!
 
 Feel free to modify any section to better suit your team's needs or to add more information about your project.`
 
-
-
-
 module.exports = {
-    aboutTxt,
-  };
-  
+  aboutTxt,
+  checkRank: function checkRankLevel(exp) {
+    if (exp < 0) return { error: 'Exp cannot be lower than 0.' }
+    if (exp >= 0 && exp < 5) return { rank_name: 'Rookie', exp: exp, next_rank: 5 }
+    if (exp >= 5 && exp < 10) return { rank_name: 'Adventurer', exp: exp, next_rank: 10 }
+    if (exp >= 10 && exp < 15) return { rank_name: 'Veteran', exp: exp, next_rank: 15 }
+    if (exp >= 15 && exp < 20) return { rank_name: 'Epic', exp: exp, next_rank: 20 }
+    if (exp >= 20 && exp < 25) return { rank_name: 'Elite', exp: exp, next_rank: 25 }
+    if (exp >= 25 && exp < 30) return { rank_name: 'Mythic', exp: exp, next_rank: 30 }
+    if (exp >= 30 && exp < 35) return { rank_name: 'Immortal', exp: exp, next_rank: 35 }
+  },
+}

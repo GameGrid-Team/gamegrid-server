@@ -4,7 +4,7 @@ const cors = require('cors')
 const { connectToDb, getDb } = require('./db')
 const { ObjectId } = require('mongodb')
 const app = express()
-const generalTexts = require('./fixture/general_text')
+const general = require('./fixture/general_text')
 app.use(express.json())
 app.use(cors())
 let db
@@ -23,7 +23,7 @@ connectToDb((err) => {
 
 //Get about page text
 app.get('/api/about', (req, res) => {
-  res.json({ aboutText: generalTexts.aboutTxt })
+  res.json({ aboutText: general.aboutTxt })
 })
 
 app.get('/api/ping', (req, res) => {

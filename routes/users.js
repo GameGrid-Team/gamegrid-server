@@ -4,17 +4,27 @@ const router = express.Router()
 
 module.exports = (db) => {
   const usersDB = db.collection('users')
+  const usersSocialDB = db.collection('usersSocial')
 
   //insert user
   router.post('/insert', (req, res) => {
-    let err = { error: 'the value of the fields equal to 1 are taken', emailCheck: 0, nickCheck: 0 }
-    const reqUser = req.body
-    const nickname = reqUser.nickname
-    const email = reqUser.email
+    let err = { error: 'The value of the fields equal to 1 are taken', emailCheck: 0, nickCheck: 0 }
+    const userBody = req.body
+    const nickname = userBody.nickname
+    const email = userBody.email
+    const social = {
+      followers: [],
+      following: [],
+      posts_saved: [],
+      total_likes: 0,
+      total_share: 0,
+      total_saves: 0,
+      rank: { rank_name: 'Rookie', exp: 0, next_rank: 5 },
+    }
+    userBody.social = social
     usersDB
       .find()
       .forEach((user) => {
-        console.log('User', user)
         if (user.nickname === nickname) {
           err.nickCheck = 1
         }
@@ -26,8 +36,8 @@ module.exports = (db) => {
         if (err.emailCheck === 1 || err.nickCheck === 1) {
           res.status(404).json(err)
         } else {
-          usersDB.insertOne(reqUser)
-          res.status(200).json(reqUser)
+          usersDB.insertOne(userBody)
+          res.status(200).json(userBody)
         }
       })
       .catch(() => {
@@ -37,7 +47,7 @@ module.exports = (db) => {
 
   //user deletion
   router.delete('/:userid/delete', (req, res) => {
-    let err = { error: 'user does not exist' }
+    let err = { error: 'User does not exist' }
     const userID = req.params.userid
     usersDB
       .deleteOne({ _id: new ObjectId(userID) })
@@ -59,6 +69,35 @@ module.exports = (db) => {
       })
       .catch(() => {
         res.status(404).json({ error: 'Update Failed' })
+      })
+  })
+
+  router.get('/:userid/data', (req, res) => {
+    let err = { error: 'User does not exist' }
+    const userID = req.params.userid
+    usersDB
+      .findOne({ _id: new ObjectId(userID) })
+      .then((user) => {
+        res.status(200).json(user)
+      })
+      .catch(() => {
+        res.status(404).json(err)
+      })
+  })
+
+  router.get('/all', (req, res) => {
+    let err = { error: 'Failed to fetch users' }
+    let usersList = []
+    usersDB
+      .find()
+      .forEach((user) => {
+        usersList.push(user)
+      })
+      .then(() => {
+        res.status(200).json({ users: usersList })
+      })
+      .catch(() => {
+        res.status(404).json(err)
       })
   })
   return router

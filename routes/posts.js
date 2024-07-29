@@ -1,5 +1,7 @@
 const express = require('express')
+const { string } = require('joi')
 const { ObjectId } = require('mongodb')
+const general = require('../fixture/general_text')
 const router = express.Router()
 
 module.exports = (db) => {
@@ -23,7 +25,7 @@ module.exports = (db) => {
       })
   })
 
-  //post update
+  //post data update likes, saves, all
   router.post('/:postid/post/update', (req, res) => {
     let err = { error: 'Faild to update post' }
     const postID = req.params.postid
@@ -71,5 +73,54 @@ module.exports = (db) => {
         res.status(404).json({ error: 'Failed to fetch posts' })
       })
   })
+
+  router.get('/:postid/:userid/like', (req, res) => {
+    const userId = req.params.userid
+    const postId = req.params.postid
+    postDB.findOne({ _id: new ObjectId(postId) }).then((post) => {
+      usersDB
+        .findOne({ _id: post.userid })
+        .then((user) => {
+          post.likes.count += 1
+          post.likes.users.push(userId)
+          user.social.rank.exp += 3
+
+          user.social = general.checkRank(user.social.rank.exp)
+
+          postDB.updateOne({ _id: new ObjectId(postId) }, { $set: post })
+          usersDB.updateOne({ _id: new ObjectId(post.userid) }, { $set: user })
+
+          res.status(200).json(post)
+        })
+        .catch(() => {
+          res.status(400).json({ error: 'error' })
+        })
+    })
+  })
+
+  router.get('/:postid/:userid/unlike', (req, res) => {
+    const userId = req.params.userid
+    const postId = req.params.postid
+    postDB.findOne({ _id: new ObjectId(postId) }).then((post) => {
+      usersDB
+        .findOne({ _id: post.userid })
+        .then((user) => {
+          post.likes.count -= 1
+          post.likes.users.pop(userId)
+          user.social.rank.exp -= 3
+
+          user.social = general.checkRank(user.social.rank.exp)
+
+          postDB.updateOne({ _id: new ObjectId(postId) }, { $set: post })
+          usersDB.updateOne({ _id: new ObjectId(post.userid) }, { $set: user })
+
+          res.status(200).json(post)
+        })
+        .catch(() => {
+          res.status(400).json({ error: 'error' })
+        })
+    })
+  })
+
   return router
 }
