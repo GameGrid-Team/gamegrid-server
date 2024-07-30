@@ -81,20 +81,6 @@ module.exports = (db) => {
     postDB.findOne({ _id: new ObjectId(postId) }).then((post) => {
       usersDB
         .findOne({ _id: post.userid })
-<<<<<<< HEAD
-        .then((user) => {
-          console.log(1)
-
-          post.likes.count += 1
-          console.log(2)
-
-          post.likes.users.push(userId)
-          console.log(3)
-          console.log(user)
-
-          user.social.rank.exp += 3
-          console.log(4)
-=======
         .then((postCreator) => {
           post.likes.count += 1
           if (post.likes.users.includes(userId)) {
@@ -102,7 +88,6 @@ module.exports = (db) => {
             return
           }
           post.likes.users.push(userId)
->>>>>>> 23567eea7b2a6d147ed5cfb269f87a45c8ff2000
 
           postCreator.social.rank.exp += 3
 
@@ -126,21 +111,6 @@ module.exports = (db) => {
     postDB.findOne({ _id: new ObjectId(postId) }).then((post) => {
       usersDB
         .findOne({ _id: post.userid })
-<<<<<<< HEAD
-        .then((user) => {
-          console.log(111111111)
-          post.likes.count -= 1
-          console.log(222222222)
-          post.likes.users.pop(userId)
-          console.log(333333333)
-          // add check for negative exp  { error: 'Exp cannot be lower than 0.' }
-          user.social.rank.exp -= 3
-          console.log(444444444)
-          user.social = general.checkRank(user.social.rank.exp)
-
-          postDB.updateOne({ _id: new ObjectId(postId) }, { $set: post })
-          usersDB.updateOne({ _id: new ObjectId(post.userid) }, { $set: user })
-=======
         .then((postCreator) => {
           post.likes.count -= 1
           console.log('hey')
@@ -161,7 +131,6 @@ module.exports = (db) => {
 
           postDB.updateOne({ _id: new ObjectId(postId) }, { $set: post })
           usersDB.updateOne({ _id: new ObjectId(post.userid) }, { $set: postCreator })
->>>>>>> 23567eea7b2a6d147ed5cfb269f87a45c8ff2000
 
           res.status(200).json(post)
         })
