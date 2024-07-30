@@ -1,6 +1,7 @@
 const express = require('express')
 const { ObjectId } = require('mongodb')
 const router = express.Router()
+const general = require('../fixture/general_text')
 
 module.exports = (db) => {
   const usersDB = db.collection('users')
@@ -9,7 +10,21 @@ module.exports = (db) => {
   //insert user
   router.post('/insert', (req, res) => {
     let err = { error: 'The value of the fields equal to 1 are taken', emailCheck: 0, nickCheck: 0 }
+    templateJson = {
+      nickname: '',
+      first_name: '',
+      last_name: '',
+      password: '',
+      gender: '',
+      email: '',
+      birth_date: '',
+    }
     const userBody = req.body
+    console.log(userBody)
+    if (!general.areKeysIncluded(templateJson, userBody)) {
+      res.status(400).json({ error: 'Unmatched keys.' })
+      return
+    }
     const nickname = userBody.nickname
     const email = userBody.email
     const social = {

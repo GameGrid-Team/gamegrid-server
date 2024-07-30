@@ -8,7 +8,7 @@ module.exports = (db) => {
   const postDB = db.collection('posts')
   const usersDB = db.collection('users')
 
-  //Insert post+
+  //Insert post
   router.post('/:userid/post/insert', (req, res) => {
     let err = { error: 'Faild to upload post' }
     const postBody = req.body
@@ -25,7 +25,7 @@ module.exports = (db) => {
       })
   })
 
-  //post data update likes, saves, all
+  //update post
   router.post('/:postid/post/update', (req, res) => {
     let err = { error: 'Faild to update post' }
     const postID = req.params.postid

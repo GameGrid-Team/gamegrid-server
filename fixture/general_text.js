@@ -22,15 +22,26 @@ Join us on this exciting journey and be a part of the GameGrid community!
 
 Feel free to modify any section to better suit your team's needs or to add more information about your project.`
 
+function checkRankLevel(exp) {
+  if (exp >= 0 && exp < 5) return { rank_name: 'Rookie', exp: exp, next_rank: 5 }
+  if (exp >= 5 && exp < 10) return { rank_name: 'Adventurer', exp: exp, next_rank: 10 }
+  if (exp >= 10 && exp < 15) return { rank_name: 'Veteran', exp: exp, next_rank: 15 }
+  if (exp >= 15 && exp < 20) return { rank_name: 'Epic', exp: exp, next_rank: 20 }
+  if (exp >= 20 && exp < 25) return { rank_name: 'Elite', exp: exp, next_rank: 25 }
+  if (exp >= 25 && exp < 30) return { rank_name: 'Mythic', exp: exp, next_rank: 30 }
+  if (exp >= 30) return { rank_name: 'Immortal', exp: exp, next_rank: 10000000 }
+}
+
+function areKeysIncluded(originalJson, clientJson) {
+  const originalKeys = Object.keys(originalJson)
+  const clientKeys = Object.keys(clientJson)
+  console.log(originalKeys.filter((key) => !clientKeys.includes(key)))
+
+  return originalKeys.filter((key) => !clientKeys.includes(key))
+}
+
 module.exports = {
   aboutTxt,
-  checkRank: function checkRankLevel(exp) {
-    if (exp >= 0 && exp < 5) return { rank_name: 'Rookie', exp: exp, next_rank: 5 }
-    if (exp >= 5 && exp < 10) return { rank_name: 'Adventurer', exp: exp, next_rank: 10 }
-    if (exp >= 10 && exp < 15) return { rank_name: 'Veteran', exp: exp, next_rank: 15 }
-    if (exp >= 15 && exp < 20) return { rank_name: 'Epic', exp: exp, next_rank: 20 }
-    if (exp >= 20 && exp < 25) return { rank_name: 'Elite', exp: exp, next_rank: 25 }
-    if (exp >= 25 && exp < 30) return { rank_name: 'Mythic', exp: exp, next_rank: 30 }
-    if (exp >= 30) return { rank_name: 'Immortal', exp: exp, next_rank: 10000000 }
-  },
+  checkRank: checkRankLevel,
+  areKeysIncluded: areKeysIncluded,
 }
