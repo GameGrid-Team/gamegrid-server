@@ -81,15 +81,20 @@ module.exports = (db) => {
     postDB.findOne({ _id: new ObjectId(postId) }).then((post) => {
       usersDB
         .findOne({ _id: post.userid })
-        .then((user) => {
+        .then((postCreator) => {
           post.likes.count += 1
+          if (post.likes.users.includes(userId)) {
+            res.status(400).json({ error: 'User already liked this post.' })
+            return
+          }
           post.likes.users.push(userId)
-          user.social.rank.exp += 3
 
-          user.social = general.checkRank(user.social.rank.exp)
+          postCreator.social.rank.exp += 3
+
+          postCreator.social.rank = general.checkRank(postCreator.social.rank.exp)
 
           postDB.updateOne({ _id: new ObjectId(postId) }, { $set: post })
-          usersDB.updateOne({ _id: new ObjectId(post.userid) }, { $set: user })
+          usersDB.updateOne({ _id: new ObjectId(post.userid) }, { $set: postCreator })
 
           res.status(200).json(post)
         })
@@ -100,30 +105,40 @@ module.exports = (db) => {
   })
 
   // unlike post
-  //   router.get('/:postid/:userid/unlike', (req, res) => {
-  //     const userId = req.params.userid
-  //     const postId = req.params.postid
-  //     postDB.findOne({ _id: new ObjectId(postId) }).then((post) => {
-  //       usersDB
-  //         .findOne({ _id: post.userid })
-  //         .then((user) => {
-  //           post.likes.count -= 1
-  //           post.likes.users.pop(userId)
-  //           user.social.rank.exp -= 3
-  //           //   if (user.social.rank.exp < 0) return { error: 'Exp cannot be lower than 0.' }
+  router.get('/:postid/:userid/unlike', (req, res) => {
+    const userId = req.params.userid
+    const postId = req.params.postid
+    postDB.findOne({ _id: new ObjectId(postId) }).then((post) => {
+      usersDB
+        .findOne({ _id: post.userid })
+        .then((postCreator) => {
+          post.likes.count -= 1
+          console.log('hey')
+          if (!post.likes.users.includes(userId)) {
+            res.status(400).json({ error: 'User didnt liked this post.' })
+            return
+          }
+          post.likes.users.pop(userId)
+          console.log('hey2')
+          postCreator.social.rank.exp -= 3
+          //   if (user.social.rank.exp < 0) return { error: 'Exp cannot be lower than 0.' }
+          if (postCreator.social.rank.exp < 0) {
+            res.status(400).json({ error: 'Exp cannot be lower then 0.' })
+            return
+          }
+          console.log('hey3')
+          postCreator.social.rank = general.checkRank(postCreator.social.rank.exp)
 
-  //           user.social = general.checkRank(user.social.rank.exp)
+          postDB.updateOne({ _id: new ObjectId(postId) }, { $set: post })
+          usersDB.updateOne({ _id: new ObjectId(post.userid) }, { $set: postCreator })
 
-  //           postDB.updateOne({ _id: new ObjectId(postId) }, { $set: post })
-  //           usersDB.updateOne({ _id: new ObjectId(post.userid) }, { $set: user })
-
-  //           res.status(200).json(post)
-  //         })
-  //         .catch(() => {
-  //           res.status(400).json({ error: 'error' })
-  //         })
-  //     })
-  //   })ך
+          res.status(200).json(post)
+        })
+        .catch(() => {
+          res.status(400).json({ error: 'error' })
+        })
+    })
+  })
 
   return router
 }
