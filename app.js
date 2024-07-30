@@ -102,6 +102,39 @@ app.get('/api/login', (req, res) => {
       res.status(404).json({ error: 'Login Failed' })
     })
 })
+//user creat post
+app.post('/api/user/:id/post/insert', (req, res) => {
+  let err = { error: 'the value of the fields equal to 1 are taken', emailCheck: 0, nickCheck: 0 }
+  const reqUser = req.body
+  const usersDB = db.collection('users')
+  const postDB = db.collection('posts')
+  usersDB.findOne({ _id: new ObjectId(req.params.id)})
+  .then(()=>{
+    reqUser.userid = new ObjectId(req.params.id)
+    postDB.insertOne(reqUser)
+    res.status(200).json({message:'Post create Successfully'})
+  })
+  .catch(() => {
+    res.status(404).json(err)
+  })
+})
+//user get post list
+app.get('/api/user/:id/posts', (req, res) => {
+  const userId = req.params.id
+  const postsDB = db.collection('posts')
+  let postList = []
+  postsDB.find({ userid: new ObjectId(userId) }).forEach((post)=>{
+    console.log(post)
+    postList.push(post)
+  })
+  .then(()=>{
+    res.status(200).json(postList)
+  })
+  .catch(()=>{
+    res.status(404).json({error : "error"})
+  })
+})
+
 
 app.get('/api/about', (req, res) => {
   res.json({ aboutText: generalTexts.aboutTxt })
@@ -109,6 +142,25 @@ app.get('/api/about', (req, res) => {
 app.get('/api/ping', (req, res) => {
   res.json(['pong I LOVE U 7'])
 })
+
+app.post('/api/login', (req, res) => {
+  if (!req.body.email) {
+    res.status(400).json({ error: 'Name is required be' })
+    return
+  }
+  const user = {
+    email: req.body.email,
+    password: req.body.password,
+  }
+  res.status(200).json(user)
+})
+
+
+
+
+
+
+
 
 //  Original
 // app.post('/api/user', (req, res) => {
