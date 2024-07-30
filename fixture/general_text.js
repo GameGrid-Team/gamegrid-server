@@ -32,16 +32,27 @@ function checkRankLevel(exp) {
   if (exp >= 30) return { rank_name: 'Immortal', exp: exp, next_rank: 10000000 }
 }
 
-function areKeysIncluded(originalJson, clientJson) {
+//forr insert - force including all fields and also checks for wrong ones.
+function keysMustInclude(originalJson, clientJson) {
   const originalKeys = Object.keys(originalJson)
   const clientKeys = Object.keys(clientJson)
   console.log(originalKeys.filter((key) => !clientKeys.includes(key)))
-
   return originalKeys.filter((key) => !clientKeys.includes(key))
 }
 
+//for update - dont force to insert all fields, just checks.
+function areKeysIncluded(originalJson, clientJson) {
+  const originalKeys = Object.keys(originalJson)
+  const clientKeys = Object.keys(clientJson)
+  const extraInClient = clientKeys.filter((key) => !originalKeys.includes(key))
+  return {
+    inccorect_fields: extraInClient,
+    expected_keys: originalKeys,
+  }
+}
 module.exports = {
   aboutTxt,
   checkRank: checkRankLevel,
+  keysMustInclude: keysMustInclude,
   areKeysIncluded: areKeysIncluded,
 }

@@ -7,16 +7,40 @@ const router = express.Router()
 module.exports = (db) => {
   const postDB = db.collection('posts')
   const usersDB = db.collection('users')
-
+  const templateJson = {
+    tags: [],
+    game: [],
+    platform: [],
+    text: '',
+    shared: false,
+  }
   //Insert post
   router.post('/:userid/post/insert', (req, res) => {
     let err = { error: 'Faild to upload post' }
     const postBody = req.body
+    const incorrectFields = general.keysMustInclude(templateJson, postBody)
+    if (incorrectFields.length) {
+      res.status(400).json({ error: 'Unmatched keys.', incorrect_missing_fields: incorrectFields })
+      return
+    }
     usersDB
       .findOne({ _id: new ObjectId(req.params.userid) })
       .then(() => {
-        postBody.userid = new ObjectId(req.params.userid)
+        postBody.user_id = new ObjectId(req.params.userid)
         postBody.timestamp = new Date()
+        postBody.likes = {
+          count: 0,
+          users: [],
+        }
+        postBody.saves = {
+          count: 0,
+          users: [],
+        }
+        postBody.shares = {
+          count: 0,
+          users: [],
+        }
+        postBody.shared_post = ''
         postDB.insertOne(postBody)
         res.status(200).json({ message: 'Post create Successfully' })
       })
@@ -31,10 +55,17 @@ module.exports = (db) => {
     const postID = req.params.postid
     const updateBody = req.body
     const postDB = db.collection('posts')
+    const incorrectFields = general.areKeysIncluded(templateJson, updateBody)
+    if (incorrectFields.inccorect_fields.length) {
+      res.status(400).json({ error: 'Unmatched keys.', incorrect_missing_fields: incorrectFields })
+      return
+    }
     postDB
       .updateOne({ _id: new ObjectId(postID) }, { $set: updateBody })
       .then(() => {
-        res.status(200).json({ message: 'Post updated Successfully' })
+        postDB.findOne({ _id: new ObjectId(postID) }).then((post) => {
+          res.status(200).json({ message: 'Post updated Successfully', updated_post: post })
+        })
       })
       .catch(() => {
         res.status(404).json(err)
@@ -56,7 +87,7 @@ module.exports = (db) => {
       })
   })
 
-  //user get post list
+  //get posts list by user_id
   router.get('/:userid/posts', (req, res) => {
     const userId = req.params.userid
     let postList = []

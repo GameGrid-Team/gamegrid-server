@@ -6,23 +6,23 @@ const general = require('../fixture/general_text')
 module.exports = (db) => {
   const usersDB = db.collection('users')
   const usersSocialDB = db.collection('usersSocial')
-
+  const templateJson = {
+    nickname: '',
+    first_name: '',
+    last_name: '',
+    password: '',
+    gender: '',
+    email: '',
+    birth_date: '',
+  }
   //insert user
   router.post('/insert', (req, res) => {
     let err = { error: 'The value of the fields equal to 1 are taken', emailCheck: 0, nickCheck: 0 }
-    templateJson = {
-      nickname: '',
-      first_name: '',
-      last_name: '',
-      password: '',
-      gender: '',
-      email: '',
-      birth_date: '',
-    }
+
     const userBody = req.body
-    console.log(userBody)
-    if (!general.areKeysIncluded(templateJson, userBody)) {
-      res.status(400).json({ error: 'Unmatched keys.' })
+    const incorrectFields = general.keysMustInclude(templateJson, userBody)
+    if (incorrectFields.length) {
+      res.status(400).json({ error: 'Unmatched keys.', incorrect_missing_fields: incorrectFields })
       return
     }
     const nickname = userBody.nickname
@@ -78,6 +78,11 @@ module.exports = (db) => {
   //update user
   router.post('/:userid/update', (req, res) => {
     const userID = req.params.userid
+    const incorrectFields = general.areKeysIncluded(templateJson, req.body)
+    if (incorrectFields.inccorect_fields.length) {
+      res.status(400).json({ error: 'Unmatched keys.', incorrect_missing_fields: incorrectFields })
+      return
+    }
     usersDB
       .updateOne({ _id: new ObjectId(userID) }, { $set: req.body })
       .then(() => {
@@ -87,6 +92,7 @@ module.exports = (db) => {
         res.status(404).json({ error: 'Update Failed' })
       })
   })
+
   //certain users data
   router.get('/:userid/data', (req, res) => {
     let err = { error: 'User does not exist' }
