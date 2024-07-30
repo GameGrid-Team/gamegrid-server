@@ -79,8 +79,8 @@ module.exports = (db) => {
   router.post('/:userid/update', (req, res) => {
     const userID = req.params.userid
     const incorrectFields = general.areKeysIncluded(templateJson, req.body)
-    if (incorrectFields.inccorect_fields.length) {
-      res.status(400).json({ error: 'Unmatched keys.', incorrect_missing_fields: incorrectFields })
+    if (incorrectFields.incorrect_keys.length || Object.keys(incorrectFields.incorrect_value_type).length) {
+      res.status(400).json({ error: 'Unmatched keys.', error_data: incorrectFields })
       return
     }
     usersDB

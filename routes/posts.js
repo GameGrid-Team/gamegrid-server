@@ -19,8 +19,8 @@ module.exports = (db) => {
     let err = { error: 'Faild to upload post' }
     const postBody = req.body
     const incorrectFields = general.keysMustInclude(templateJson, postBody)
-    if (incorrectFields.length) {
-      res.status(400).json({ error: 'Unmatched keys.', incorrect_missing_fields: incorrectFields })
+    if (incorrectFields.incorrect_keys.length || Object.keys(incorrectFields.incorrect_value_type).length) {
+      res.status(400).json({ error: 'Unmatched keys.', error_data: incorrectFields })
       return
     }
     usersDB
@@ -91,7 +91,8 @@ module.exports = (db) => {
   router.get('/:userid/posts', (req, res) => {
     const userId = req.params.userid
     let postList = []
-    postsDB
+
+    postDB
       .find({ userid: new ObjectId(userId) })
       .forEach((post) => {
         console.log(post)
