@@ -1,22 +1,67 @@
-const express = require('express')
-const Joi = require('joi')
-const cors = require('cors')
-const { connectToDb, getDb } = require('./db')
-const { ObjectId } = require('mongodb')
-const app = express()
-app.use(express.json())
-const generalTexts = require('./fixture/general_text')
-let db
+const express = require('express');
+const Joi = require('joi');
+const cors = require('cors');
+const { connectToDb, getDb } = require('./db');
+const { ObjectId } = require('mongodb');
+const multer = require('multer');
+const { GridFsStorage } = require('multer-gridfs-storage');
+const Grid = require('gridfs-stream');
+const app = express();
+app.use(express.json());
+app.use(cors());
 
+let db;
+let gfs;
+
+// Connect to DB
 connectToDb((err) => {
   if (!err) {
-    const port = process.env.PORT || 3001
-    app.listen(port, () => console.log(`Listening on port ${port}`))
-    db = getDb()
+    const port = process.env.PORT || 3001;
+    app.listen(port, () => console.log(`Listening on port ${port}`));
+    db = getDb();
+    gfs = Grid(db, db.mongo);
+    gfs.collection('uploads');
   }
-})
-// const port = process.env.PORT || 3001
-// app.listen(port, () => console.log(`Listening on port ${port}`))
+});
+
+// Multer GridFS storage configuration
+const storage = new GridFsStorage({
+  url: 'mongodb+srv://lioren:WkmPa3gtx4GU5KL3@cluster0.zcwf0na.mongodb.net/', // Replace with your MongoDB URL
+  options: { useUnifiedTopology: true },
+  file: (req, file) => {
+    return {
+      bucketName: 'uploads', // Collection name in MongoDB
+      filename: file.originalname,
+    };
+  },
+});
+
+const upload = multer({ storage });
+
+// Route to upload files
+app.post('/api/upload', upload.single('file'), (req, res) => {
+  res.status(201).json({ file: req.file });
+});
+
+// Route to get files by filename
+app.get('/api/file/:filename', (req, res) => {
+  gfs.files.findOne({ filename: req.params.filename }, (err, file) => {
+    if (!file || file.length === 0) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+    // File exists, stream it to the client
+    const readStream = gfs.createReadStream(file.filename);
+    readStream.pipe(res);
+  });
+});
+
+// Route to delete files
+app.delete('/api/file/:filename', (req, res) => {
+  gfs.remove({ filename: req.params.filename, root: 'uploads' }, (err) => {
+    if (err) return res.status(500).json({ error: 'Failed to delete file' });
+    res.status(200).json({ message: 'File deleted successfully' });
+  });
+});
 
 app.use(cors())
 
@@ -110,6 +155,11 @@ app.get('/api/login', (req, res) => {
 
   })
 })
+
+
+
+
+
 
 app.get('/api/about', (req, res) => {
   res.json({ aboutText: generalTexts.aboutTxt })
