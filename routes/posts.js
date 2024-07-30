@@ -82,9 +82,17 @@ module.exports = (db) => {
       usersDB
         .findOne({ _id: post.userid })
         .then((user) => {
+          console.log(1)
+
           post.likes.count += 1
+          console.log(2)
+
           post.likes.users.push(userId)
+          console.log(3)
+          console.log(user)
+
           user.social.rank.exp += 3
+          console.log(4)
 
           user.social = general.checkRank(user.social.rank.exp)
 
@@ -100,30 +108,33 @@ module.exports = (db) => {
   })
 
   // unlike post
-  //   router.get('/:postid/:userid/unlike', (req, res) => {
-  //     const userId = req.params.userid
-  //     const postId = req.params.postid
-  //     postDB.findOne({ _id: new ObjectId(postId) }).then((post) => {
-  //       usersDB
-  //         .findOne({ _id: post.userid })
-  //         .then((user) => {
-  //           post.likes.count -= 1
-  //           post.likes.users.pop(userId)
-  //           user.social.rank.exp -= 3
-  //           //   if (user.social.rank.exp < 0) return { error: 'Exp cannot be lower than 0.' }
+  router.get('/:postid/:userid/unlike', (req, res) => {
+    const userId = req.params.userid
+    const postId = req.params.postid
+    postDB.findOne({ _id: new ObjectId(postId) }).then((post) => {
+      usersDB
+        .findOne({ _id: post.userid })
+        .then((user) => {
+          console.log(111111111)
+          post.likes.count -= 1
+          console.log(222222222)
+          post.likes.users.pop(userId)
+          console.log(333333333)
+          // add check for negative exp  { error: 'Exp cannot be lower than 0.' }
+          user.social.rank.exp -= 3
+          console.log(444444444)
+          user.social = general.checkRank(user.social.rank.exp)
 
-  //           user.social = general.checkRank(user.social.rank.exp)
+          postDB.updateOne({ _id: new ObjectId(postId) }, { $set: post })
+          usersDB.updateOne({ _id: new ObjectId(post.userid) }, { $set: user })
 
-  //           postDB.updateOne({ _id: new ObjectId(postId) }, { $set: post })
-  //           usersDB.updateOne({ _id: new ObjectId(post.userid) }, { $set: user })
-
-  //           res.status(200).json(post)
-  //         })
-  //         .catch(() => {
-  //           res.status(400).json({ error: 'error' })
-  //         })
-  //     })
-  //   })ך
+          res.status(200).json(post)
+        })
+        .catch(() => {
+          res.status(400).json({ error: 'error' })
+        })
+    })
+  })
 
   return router
 }
