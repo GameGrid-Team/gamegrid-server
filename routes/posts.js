@@ -81,6 +81,7 @@ module.exports = (db) => {
     postDB.findOne({ _id: new ObjectId(postId) }).then((post) => {
       usersDB
         .findOne({ _id: post.userid })
+<<<<<<< HEAD
         .then((user) => {
           console.log(1)
 
@@ -93,11 +94,22 @@ module.exports = (db) => {
 
           user.social.rank.exp += 3
           console.log(4)
+=======
+        .then((postCreator) => {
+          post.likes.count += 1
+          if (post.likes.users.includes(userId)) {
+            res.status(400).json({ error: 'User already liked this post.' })
+            return
+          }
+          post.likes.users.push(userId)
+>>>>>>> 23567eea7b2a6d147ed5cfb269f87a45c8ff2000
 
-          user.social = general.checkRank(user.social.rank.exp)
+          postCreator.social.rank.exp += 3
+
+          postCreator.social.rank = general.checkRank(postCreator.social.rank.exp)
 
           postDB.updateOne({ _id: new ObjectId(postId) }, { $set: post })
-          usersDB.updateOne({ _id: new ObjectId(post.userid) }, { $set: user })
+          usersDB.updateOne({ _id: new ObjectId(post.userid) }, { $set: postCreator })
 
           res.status(200).json(post)
         })
@@ -114,6 +126,7 @@ module.exports = (db) => {
     postDB.findOne({ _id: new ObjectId(postId) }).then((post) => {
       usersDB
         .findOne({ _id: post.userid })
+<<<<<<< HEAD
         .then((user) => {
           console.log(111111111)
           post.likes.count -= 1
@@ -127,6 +140,28 @@ module.exports = (db) => {
 
           postDB.updateOne({ _id: new ObjectId(postId) }, { $set: post })
           usersDB.updateOne({ _id: new ObjectId(post.userid) }, { $set: user })
+=======
+        .then((postCreator) => {
+          post.likes.count -= 1
+          console.log('hey')
+          if (!post.likes.users.includes(userId)) {
+            res.status(400).json({ error: 'User didnt liked this post.' })
+            return
+          }
+          post.likes.users.pop(userId)
+          console.log('hey2')
+          postCreator.social.rank.exp -= 3
+          //   if (user.social.rank.exp < 0) return { error: 'Exp cannot be lower than 0.' }
+          if (postCreator.social.rank.exp < 0) {
+            res.status(400).json({ error: 'Exp cannot be lower then 0.' })
+            return
+          }
+          console.log('hey3')
+          postCreator.social.rank = general.checkRank(postCreator.social.rank.exp)
+
+          postDB.updateOne({ _id: new ObjectId(postId) }, { $set: post })
+          usersDB.updateOne({ _id: new ObjectId(post.userid) }, { $set: postCreator })
+>>>>>>> 23567eea7b2a6d147ed5cfb269f87a45c8ff2000
 
           res.status(200).json(post)
         })

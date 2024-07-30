@@ -50,6 +50,7 @@ module.exports = (db) => {
     let err = { error: 'User does not exist' }
     const userID = req.params.userid
     usersDB
+
       .deleteOne({ _id: new ObjectId(userID) })
       .then(() => {
         res.status(200).json({ message: 'User Removed Successfully' })
@@ -71,7 +72,7 @@ module.exports = (db) => {
         res.status(404).json({ error: 'Update Failed' })
       })
   })
-
+  //certain users data
   router.get('/:userid/data', (req, res) => {
     let err = { error: 'User does not exist' }
     const userID = req.params.userid
@@ -85,6 +86,7 @@ module.exports = (db) => {
       })
   })
 
+  //all users data
   router.get('/all', (req, res) => {
     let err = { error: 'Failed to fetch users' }
     let usersList = []
@@ -100,6 +102,7 @@ module.exports = (db) => {
         res.status(404).json(err)
       })
   })
+
   return router
 }
 

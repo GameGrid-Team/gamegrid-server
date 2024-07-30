@@ -31,6 +31,6 @@ module.exports = {
     if (exp >= 15 && exp < 20) return { rank_name: 'Epic', exp: exp, next_rank: 20 }
     if (exp >= 20 && exp < 25) return { rank_name: 'Elite', exp: exp, next_rank: 25 }
     if (exp >= 25 && exp < 30) return { rank_name: 'Mythic', exp: exp, next_rank: 30 }
-    if (exp >= 30) return { rank_name: 'Immortal', exp: exp, next_rank: 100000000000 }
+    if (exp >= 30) return { rank_name: 'Immortal', exp: exp, next_rank: 10000000 }
   },
 }
