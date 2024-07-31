@@ -106,6 +106,46 @@ module.exports = (db) => {
       })
   })
 
+  //get all posts
+  router.get('/all/posts', (req, res) => {
+    let postList = []
+
+    postDB
+      .find()
+      .forEach((post) => {
+        postList.push(post)
+      })
+      .then(() => {
+        res.status(200).json({ posts_list: postList })
+      })
+      .catch(() => {
+        res.status(404).json({ error: 'Failed to fetch posts' })
+      })
+  })
+
+  //get my following posts
+  router.get('/:userid/following/posts', (req, res) => {
+    const userId = req.params.userid
+    let postList = []
+
+    usersDB
+      .findOne({ _id: new ObjectId(userId) })
+      .then((user) => {
+        user.social.following.forEach((follower) => {
+          postDB.find({ user_id: new ObjectId(follower) }).forEach((post) => {
+            postList.push(post)
+          })
+        })
+      })
+      .then(() => {
+        console.log('//////', postList)
+        res.status(200).json({ posts_list: postList })
+      })
+      .catch(() => {
+        res.status(404).json({ error: 'Failed to fetch posts' })
+      })
+  })
+
   // like post
   router.get('/:postid/:userid/like', (req, res) => {
     const userId = req.params.userid

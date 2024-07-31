@@ -21,8 +21,8 @@ module.exports = (db) => {
 
     const userBody = req.body
     const incorrectFields = general.keysMustInclude(templateJson, userBody)
-    if (incorrectFields.length) {
-      res.status(400).json({ error: 'Unmatched keys.', incorrect_missing_fields: incorrectFields })
+    if (incorrectFields.incorrect_keys.length || Object.keys(incorrectFields.incorrect_value_type).length) {
+      res.status(400).json({ error: 'Unmatched keys.', error_data: incorrectFields })
       return
     }
     const nickname = userBody.nickname
