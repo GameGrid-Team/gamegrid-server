@@ -93,7 +93,7 @@ module.exports = (db) => {
     let postList = []
 
     postDB
-      .find({ userid: new ObjectId(userId) })
+      .find({ user_id: new ObjectId(userId) })
       .forEach((post) => {
         console.log(post)
         postList.push(post)
