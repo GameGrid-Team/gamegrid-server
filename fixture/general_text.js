@@ -32,7 +32,7 @@ function checkRankLevel(exp) {
   if (exp >= 30) return { rank_name: 'Immortal', exp: exp, next_rank: 10000000 }
 }
 
-//for insert - force including all fields and also checks for wrong ones.
+//for insert- force including all fields and also checks for wrong ones.
 function keysMustInclude(originalJson, clientJson) {
   const originalKeys = Object.keys(originalJson)
   const clientKeys = Object.keys(clientJson)
