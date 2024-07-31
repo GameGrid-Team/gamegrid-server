@@ -33,13 +33,31 @@ function checkRankLevel(exp) {
 }
 
 //forr insert - force including all fields and also checks for wrong ones.
+
 function keysMustInclude(originalJson, clientJson) {
   const originalKeys = Object.keys(originalJson)
   const clientKeys = Object.keys(clientJson)
-  console.log(originalKeys.filter((key) => !clientKeys.includes(key)))
-  return originalKeys.filter((key) => !clientKeys.includes(key))
-}
 
+  const incorrectKeys = clientKeys.filter((key) => !originalKeys.includes(key))
+  // const incorrectKeys = originalKeys.filter((key) => !clientKeys.includes(key))
+
+  const incorrectValueType = {}
+  originalKeys.forEach((key) => {
+    if (clientKeys.includes(key)) {
+      const originalType = Array.isArray(originalJson[key]) ? 'array' : typeof originalJson[key]
+      const clientType = Array.isArray(clientJson[key]) ? 'array' : typeof clientJson[key]
+
+      if (originalType !== clientType) {
+        incorrectValueType[key] = `expected ${originalType}, got ${clientType}`
+      }
+    }
+  })
+  return {
+    incorrect_keys: incorrectKeys,
+    incorrect_value_type: incorrectValueType,
+    expected_keys: originalKeys,
+  }
+}
 //for update - dont force to insert all fields, just checks.
 function areKeysIncluded(originalJson, clientJson) {
   const originalKeys = Object.keys(originalJson)
