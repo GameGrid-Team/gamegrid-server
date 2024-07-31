@@ -32,15 +32,11 @@ function checkRankLevel(exp) {
   if (exp >= 30) return { rank_name: 'Immortal', exp: exp, next_rank: 10000000 }
 }
 
-//forr insert - force including all fields and also checks for wrong ones.
-
+//for insert- force including all fields and also checks for wrong ones.
 function keysMustInclude(originalJson, clientJson) {
   const originalKeys = Object.keys(originalJson)
   const clientKeys = Object.keys(clientJson)
-
   const incorrectKeys = clientKeys.filter((key) => !originalKeys.includes(key))
-  // const incorrectKeys = originalKeys.filter((key) => !clientKeys.includes(key))
-
   const incorrectValueType = {}
   originalKeys.forEach((key) => {
     if (clientKeys.includes(key)) {
@@ -58,6 +54,7 @@ function keysMustInclude(originalJson, clientJson) {
     expected_keys: originalKeys,
   }
 }
+
 //for update - dont force to insert all fields, just checks.
 function areKeysIncluded(originalJson, clientJson) {
   const originalKeys = Object.keys(originalJson)
