@@ -93,7 +93,7 @@ module.exports = (db) => {
     let postList = []
 
     postDB
-      .find({ userid: new ObjectId(userId) })
+      .find({ user_id: new ObjectId(userId) })
       .forEach((post) => {
         console.log(post)
         postList.push(post)
@@ -124,6 +124,27 @@ module.exports = (db) => {
   })
 
   //get my following posts
+  // router.get('/:userid/following/posts', (req, res) => {
+  //   const userId = req.params.userid
+  //   let postList = []
+
+  //   usersDB
+  //     .findOne({ _id: new ObjectId(userId) })
+  //     .then((user) => {
+  //       user.social.following.forEach((follower) => {
+  //         postDB.find({ user_id: new ObjectId(follower) }).forEach((post) => {
+  //           postList.push(post)
+  //         })
+  //       })
+  //     })
+  //     .then(() => {
+  //       console.log('//////', postList)
+  //       res.status(200).json({ posts_list: postList })
+  //     })
+  //     .catch(() => {
+  //       res.status(404).json({ error: 'Failed to fetch posts' })
+  //     })
+  // })
   router.get('/:userid/following/posts', (req, res) => {
     const userId = req.params.userid
     let postList = []
@@ -131,17 +152,24 @@ module.exports = (db) => {
     usersDB
       .findOne({ _id: new ObjectId(userId) })
       .then((user) => {
-        user.social.following.forEach((follower) => {
-          postDB.find({ user_id: new ObjectId(follower) }).forEach((post) => {
-            postList.push(post)
-          })
+        // if (!user || !user.social || !user.social.following) {
+        //   throw new Error('User or followers not found')
+        // }
+
+        // יצירת מערך של הבטחות עבור כל העוקבים
+        const postPromises = user.social.following.map((follower) => {
+          return postDB.find({ user_id: new ObjectId(follower) }).toArray()
         })
+
+        return Promise.all(postPromises)
       })
-      .then(() => {
-        console.log('//////', postList)
+      .then((postsArrays) => {
+        // שילוב כל מערכי הפוסטים למערך אחד
+        postList = postsArrays.flat()
         res.status(200).json({ posts_list: postList })
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error('Error fetching posts:', error)
         res.status(404).json({ error: 'Failed to fetch posts' })
       })
   })
