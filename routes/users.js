@@ -20,7 +20,7 @@ module.exports = (db) => {
     let err = { error: 'The value of the fields equal to 1 are taken', emailCheck: 0, nickCheck: 0 }
 
     const userBody = req.body
-    const incorrectFields = general.keysMustInclude(templateJson, postBody)
+    const incorrectFields = general.keysMustInclude(templateJson, userBody)
     if (incorrectFields.incorrect_keys.length || Object.keys(incorrectFields.incorrect_value_type).length) {
       res.status(400).json({ error: 'Unmatched keys.', error_data: incorrectFields })
       return
