@@ -2,6 +2,9 @@ const express = require('express')
 const { ObjectId } = require('mongodb')
 const router = express.Router()
 const general = require('../fixture/general_text')
+const multer = require('multer')
+
+const upload = multer({ storage: multer.memoryStorage() })
 
 module.exports = (db) => {
   const usersDB = db.collection('users')
@@ -121,6 +124,24 @@ module.exports = (db) => {
       .catch(() => {
         res.status(404).json(err)
       })
+  })
+
+  router.post('/uploadfile', upload.single('image'), async (req, res) => {
+    const result = await general.uploadFile(req.file)
+    if (result.success) {
+      res.status(200).json({ message: 'uploaded file successfully', file: result })
+    } else {
+      res.status(400).send(result.error)
+    }
+  })
+
+  router.delete('/removefile', upload.single('image'), async (req, res) => {
+    const result = await general.removeFile(req.body.url)
+    if (result.success) {
+      res.status(200).json({ message: 'removed file successfully' })
+    } else {
+      res.status(400).send(result.error)
+    }
   })
 
   return router

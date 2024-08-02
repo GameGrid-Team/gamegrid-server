@@ -246,6 +246,19 @@ module.exports = (db) => {
     })
   })
 
+  //get certain post
+  router.get('/:postid/post', (req, res) => {
+    const postID = req.params.postid
+    postDB
+      .findOne({ _id: new ObjectId(postID) })
+      .then((post) => {
+        res.status(200).json(post)
+      })
+      .catch(() => {
+        res.status(400).json({ error: 'post doesnt exists' })
+      })
+  })
+
   // save post
   router.get('/:postid/:userid/save', (req, res) => {
     const userId = req.params.userid
