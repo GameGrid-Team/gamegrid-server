@@ -62,12 +62,35 @@ module.exports = (db) => {
       })
   })
 
+  //insert user Avatar
+  router.post('/:userid/avatar/upload', upload.single('image'), async (req, res) => {
+    const userId = req.params.userid
+    const result = await general.uploadFile(req.file)
+    if (result.success) {
+      usersDB.updateOne({ _id: new ObjectId(userId) }, { $set: { avatar: result.downloadURL } })
+      res.status(200).json({ message: 'Avatar set successfully', file: result })
+    } else {
+      res.status(400).json({ error: 'Avatar failed to upload' })
+    }
+  })
+
+  // remove avatar uplaod
+  router.delete('/:userid/avatar/remove', upload.single('image'), async (req, res) => {
+    const userId = req.params.userid
+    const result = await general.removeFile(req.body.avatar_url)
+    if (result.success) {
+      usersDB.updateOne({ _id: new ObjectId(userId) }, { $set: { avatar: '' } })
+      res.status(200).json({ message: 'removed file successfully' })
+    } else {
+      res.status(400).send(result.error)
+    }
+  })
+
   //user deletion
   router.delete('/:userid/delete', (req, res) => {
     let err = { error: 'User does not exist' }
     const userID = req.params.userid
     usersDB
-
       .deleteOne({ _id: new ObjectId(userID) })
       .then(() => {
         res.status(200).json({ message: 'User Removed Successfully' })
@@ -124,24 +147,6 @@ module.exports = (db) => {
       .catch(() => {
         res.status(404).json(err)
       })
-  })
-
-  router.post('/uploadfile', upload.single('image'), async (req, res) => {
-    const result = await general.uploadFile(req.file)
-    if (result.success) {
-      res.status(200).json({ message: 'uploaded file successfully', file: result })
-    } else {
-      res.status(400).send(result.error)
-    }
-  })
-
-  router.delete('/removefile', upload.single('image'), async (req, res) => {
-    const result = await general.removeFile(req.body.url)
-    if (result.success) {
-      res.status(200).json({ message: 'removed file successfully' })
-    } else {
-      res.status(400).send(result.error)
-    }
   })
 
   return router
