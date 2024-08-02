@@ -12,7 +12,13 @@ module.exports = (db) => {
     game: [],
     platform: [],
     text: '',
-    shared: false,
+  }
+
+  const sharedTemplate = {
+    shared_post: {
+      original_post: '',
+      original_owner: '',
+    },
   }
   //Insert post
   router.post('/:userid/post/insert', (req, res) => {
@@ -25,7 +31,10 @@ module.exports = (db) => {
     }
     usersDB
       .findOne({ _id: new ObjectId(req.params.userid) })
-      .then(() => {
+      .then((user) => {
+        user.social.rank.exp += 2
+        user.social.rank = general.checkRank(user.social.rank.exp)
+        usersDB.updateOne({ _id: new ObjectId(req.params.userid) }, { $set: user })
         postBody.user_id = new ObjectId(req.params.userid)
         postBody.timestamp = new Date()
         postBody.likes = {
@@ -40,7 +49,11 @@ module.exports = (db) => {
           count: 0,
           users: [],
         }
-        postBody.shared_post = ''
+        postBody.shared_post = {
+          original_post: '',
+          original_owner: '',
+        }
+        postBody.shared = false
         postDB.insertOne(postBody)
         res.status(200).json({ message: 'Post create Successfully' })
       })
@@ -76,7 +89,31 @@ module.exports = (db) => {
   router.delete('/:postid/post/delete', (req, res) => {
     let err = { error: 'Failed to delete post' }
     const postID = req.params.postid
-
+    /*
+    postDB.findOne({ _id: new ObjectId(postID) }).then((post) => {
+      if (!post.shared_post) {
+        postDB
+          .deleteOne({ _id: new ObjectId(postID) })
+          .then(() => {
+            res.status(200).json({ message: 'Shared Post Removed Successfully' })
+          })
+          .catch(() => {
+            res.status(404).json(err)
+          })
+        return
+      }
+*/
+    postDB.findOne({ _id: new ObjectId(postID) }).then((post) => {
+      usersDB.findOne(post.user_id).then((user) => {
+        user.social.rank.exp -= 2
+        if (user.social.rank.exp < 0) {
+          res.status(400).json({ error: 'Exp cannot be lower then 0.' })
+          return
+        }
+        user.social.rank = general.checkRank(user.social.rank.exp)
+        usersDB.updateOne({ _id: user._id }, { $set: user })
+      })
+    })
     postDB
       .deleteOne({ _id: new ObjectId(postID) })
       .then(() => {
@@ -93,7 +130,7 @@ module.exports = (db) => {
     let postList = []
 
     postDB
-      .find({ userid: new ObjectId(userId) })
+      .find({ user_id: new ObjectId(userId) })
       .forEach((post) => {
         console.log(post)
         postList.push(post)
@@ -107,9 +144,8 @@ module.exports = (db) => {
   })
 
   //get all posts
-  router.get('/all/posts', (req, res) => {
+  router.get('/allposts', (req, res) => {
     let postList = []
-
     postDB
       .find()
       .forEach((post) => {
@@ -123,7 +159,7 @@ module.exports = (db) => {
       })
   })
 
-  //get my following posts
+  //get posts of who a user is following
   router.get('/:userid/following/posts', (req, res) => {
     const userId = req.params.userid
     let postList = []
@@ -131,17 +167,22 @@ module.exports = (db) => {
     usersDB
       .findOne({ _id: new ObjectId(userId) })
       .then((user) => {
-        user.social.following.forEach((follower) => {
-          postDB.find({ user_id: new ObjectId(follower) }).forEach((post) => {
-            postList.push(post)
-          })
+        // if (!user || !user.social || !user.social.following) {
+        //   throw new Error('User or followers not found')
+        // }
+
+        const postPromises = user.social.following.map((follower) => {
+          return postDB.find({ user_id: new ObjectId(follower) }).toArray()
         })
+
+        return Promise.all(postPromises)
       })
-      .then(() => {
-        console.log('//////', postList)
+      .then((postsArrays) => {
+        postList = postsArrays.flat()
         res.status(200).json({ posts_list: postList })
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error('Error fetching posts:', error)
         res.status(404).json({ error: 'Failed to fetch posts' })
       })
   })
@@ -152,7 +193,7 @@ module.exports = (db) => {
     const postId = req.params.postid
     postDB.findOne({ _id: new ObjectId(postId) }).then((post) => {
       usersDB
-        .findOne({ _id: post.userid })
+        .findOne({ _id: post.user_id })
         .then((postCreator) => {
           post.likes.count += 1
           if (post.likes.users.includes(userId)) {
@@ -160,14 +201,10 @@ module.exports = (db) => {
             return
           }
           post.likes.users.push(userId)
-
-          postCreator.social.rank.exp += 3
-
+          postCreator.social.rank.exp += 1
           postCreator.social.rank = general.checkRank(postCreator.social.rank.exp)
-
           postDB.updateOne({ _id: new ObjectId(postId) }, { $set: post })
-          usersDB.updateOne({ _id: new ObjectId(post.userid) }, { $set: postCreator })
-
+          usersDB.updateOne({ _id: new ObjectId(post.user_id) }, { $set: postCreator })
           res.status(200).json(post)
         })
         .catch(() => {
@@ -182,27 +219,24 @@ module.exports = (db) => {
     const postId = req.params.postid
     postDB.findOne({ _id: new ObjectId(postId) }).then((post) => {
       usersDB
-        .findOne({ _id: post.userid })
+        .findOne({ _id: post.user_id })
         .then((postCreator) => {
           post.likes.count -= 1
-          console.log('hey')
           if (!post.likes.users.includes(userId)) {
             res.status(400).json({ error: 'User didnt liked this post.' })
             return
           }
           post.likes.users.pop(userId)
-          console.log('hey2')
-          postCreator.social.rank.exp -= 3
+          postCreator.social.rank.exp -= 1
           //   if (user.social.rank.exp < 0) return { error: 'Exp cannot be lower than 0.' }
           if (postCreator.social.rank.exp < 0) {
             res.status(400).json({ error: 'Exp cannot be lower then 0.' })
             return
           }
-          console.log('hey3')
           postCreator.social.rank = general.checkRank(postCreator.social.rank.exp)
 
           postDB.updateOne({ _id: new ObjectId(postId) }, { $set: post })
-          usersDB.updateOne({ _id: new ObjectId(post.userid) }, { $set: postCreator })
+          usersDB.updateOne({ _id: new ObjectId(post.user_id) }, { $set: postCreator })
 
           res.status(200).json(post)
         })
@@ -212,5 +246,129 @@ module.exports = (db) => {
     })
   })
 
+  // save post
+  router.get('/:postid/:userid/save', (req, res) => {
+    const userId = req.params.userid
+    const postId = req.params.postid
+
+    postDB.findOne({ _id: new ObjectId(postId) }).then((post) => {
+      usersDB
+        .findOne({ _id: post.user_id })
+        .then((postCreator) => {
+          post.saves.count += 1
+          if (post.saves.users.includes(userId)) {
+            res.status(400).json({ error: 'User already saved this post.' })
+            return
+          }
+          post.saves.users.push(userId)
+          postCreator.social.rank.exp += 3
+          postCreator.social.rank = general.checkRank(postCreator.social.rank.exp)
+          postDB.updateOne({ _id: new ObjectId(postId) }, { $set: post })
+          usersDB.updateOne({ _id: new ObjectId(post.user_id) }, { $set: postCreator })
+
+          usersDB.findOne({ _id: new ObjectId(userId) }).then((user) => {
+            user.social.posts_saved.push(postId)
+            usersDB.updateOne({ _id: new ObjectId(userId) }, { $set: user })
+          })
+          res.status(200).json(post)
+        })
+        .catch(() => {
+          res.status(400).json({ error: 'error' })
+        })
+    })
+  })
+
+  // unsave post
+  router.get('/:postid/:userid/unsave', (req, res) => {
+    const userId = req.params.userid
+    const postId = req.params.postid
+
+    postDB.findOne({ _id: new ObjectId(postId) }).then((post) => {
+      usersDB
+        .findOne({ _id: post.user_id })
+        .then((postCreator) => {
+          post.saves.count -= 1
+          if (!post.saves.users.includes(userId)) {
+            res.status(400).json({ error: 'User didnt saved this post.' })
+            return
+          }
+          post.saves.users.pop(userId)
+          postCreator.social.rank.exp -= 3
+          if (postCreator.social.rank.exp < 0) {
+            res.status(400).json({ error: 'Exp cannot be lower then 0.' })
+            return
+          }
+          postCreator.social.rank = general.checkRank(postCreator.social.rank.exp)
+          postDB.updateOne({ _id: new ObjectId(postId) }, { $set: post })
+          usersDB.updateOne({ _id: new ObjectId(post.user_id) }, { $set: postCreator })
+
+          usersDB.findOne({ _id: new ObjectId(userId) }).then((user) => {
+            user.social.posts_saved.pop(postId)
+            usersDB.updateOne({ _id: new ObjectId(userId) }, { $set: user })
+          })
+          res.status(200).json(post)
+        })
+        .catch(() => {
+          res.status(400).json({ error: 'error' })
+        })
+    })
+  })
+
+  //share post
+  router.post('/:userid/post/share', (req, res) => {
+    let err = { error: 'Faild to share post' }
+    const postBody = req.body
+    const userID = req.params.userid
+
+    const incorrectFields = general.keysMustInclude(sharedTemplate, postBody)
+    if (incorrectFields.incorrect_keys.length || Object.keys(incorrectFields.incorrect_value_type).length) {
+      res.status(400).json({ error: 'Unmatched keys.', error_data: incorrectFields })
+      return
+    }
+    let filter = { _id: new ObjectId(postBody.shared_post.original_post) }
+    let update = {
+      $inc: { 'shares.count': 1 },
+      $push: { 'shares.users': userID },
+    }
+    postDB.findOne(filter).then((post) => {
+      if (post.shares.users.includes(userID)) {
+        let update2 = {
+          $inc: { 'shares.count': 1 },
+        }
+        postDB.updateOne(filter, update2)
+      } else {
+        postDB.updateOne(filter, update)
+      }
+    })
+    let originalOwner = { _id: new ObjectId(postBody.shared_post.original_owner) }
+
+    usersDB
+      .findOne(originalOwner)
+      .then((user) => {
+        user.social.rank.exp += 4
+        user.social.rank = general.checkRank(user.social.rank.exp)
+        usersDB.updateOne(originalOwner, { $set: user })
+        postBody.shared = true
+        postBody.user_id = new ObjectId(userID)
+        postBody.timestamp = new Date()
+        postBody.likes = {
+          count: 0,
+          users: [],
+        }
+        postBody.saves = {
+          count: 0,
+          users: [],
+        }
+        postBody.shares = {
+          count: 0,
+          users: [],
+        }
+        postDB.insertOne(postBody)
+        res.status(200).json({ message: 'Post Shared Successfully' })
+      })
+      .catch(() => {
+        res.status(404).json(err)
+      })
+  })
   return router
 }
