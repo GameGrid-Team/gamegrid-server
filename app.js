@@ -1,6 +1,7 @@
 const express = require('express')
 const Joi = require('joi')
 const cors = require('cors')
+const multer = require('multer')
 const { connectToDb, getDb } = require('./db')
 const { ObjectId } = require('mongodb')
 const app = express()
@@ -29,3 +30,11 @@ app.get('/api/about', (req, res) => {
 app.get('/api/ping', (req, res) => {
   res.json(['pong I LOVE U 7'])
 })
+
+// app.post('/api/file', upload.single('image'), async (req, res) => {
+//   console.log('body::: ', req.body)
+//   console.log('file:::', req.file)
+//   const file = req.file.buffer
+
+//   res.send({})
+// })
