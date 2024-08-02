@@ -1,3 +1,8 @@
+const { fbapp } = require('../db')
+const { getStorage, ref, deleteObject, getDownloadURL, uploadBytesResumable } = require('firebase/storage')
+const fb = fbapp
+const storage = getStorage()
+
 let aboutTxt = `About Page Content for GameGrid
 About GameGrid
 Welcome to GameGrid (GG), the ultimate social media platform designed specifically for gamers! Our mission is to create a vibrant and engaging community where gamers from all around the world can connect, share, and compete. With features tailored to enhance the gaming experience, GameGrid is more than just a social network; it's a hub for gamers to thrive.
@@ -65,9 +70,44 @@ function areKeysIncluded(originalJson, clientJson) {
     expected_keys: originalKeys,
   }
 }
+
+const uploadFile = async (file) => {
+  try {
+    const dateTime = giveCurrentDateTime()
+    const storageRef = ref(storage, `files/${file.originalname + ' ' + dateTime}`)
+    const metadata = {
+      contentType: file.mimetype,
+    }
+    const snapshot = await uploadBytesResumable(storageRef, file.buffer, metadata)
+    const downloadURL = await getDownloadURL(snapshot.ref)
+    return { success: true, downloadURL, name: file.originalname, type: file.mimetype }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+}
+
+const removeFile = async (fileUrl) => {
+  try {
+    const fileRef = ref(storage, fileUrl)
+    await deleteObject(fileRef)
+    return { success: true, message: 'File successfully deleted.' }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+}
+
+const giveCurrentDateTime = () => {
+  const today = new Date()
+  const date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate()
+  const time = today.getHours() + ':' + today.getMinutes() + ':' + today.getSeconds()
+  const dateTime = date + ' ' + time
+  return dateTime
+}
 module.exports = {
   aboutTxt,
   checkRank: checkRankLevel,
   keysMustInclude: keysMustInclude,
   areKeysIncluded: areKeysIncluded,
+  uploadFile,
+  removeFile,
 }
