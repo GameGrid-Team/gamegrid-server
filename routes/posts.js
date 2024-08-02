@@ -12,7 +12,13 @@ module.exports = (db) => {
     game: [],
     platform: [],
     text: '',
-    shared: false,
+  }
+
+  const sharedTemplate = {
+    shared_post: {
+      original_post: '',
+      original_owner: '',
+    },
   }
   //Insert post
   router.post('/:userid/post/insert', (req, res) => {
@@ -43,7 +49,11 @@ module.exports = (db) => {
           count: 0,
           users: [],
         }
-        postBody.shared_post = ''
+        postBody.shared_post = {
+          original_post: '',
+          original_owner: '',
+        }
+        postBody.shared = false
         postDB.insertOne(postBody)
         res.status(200).json({ message: 'Post create Successfully' })
       })
@@ -79,7 +89,20 @@ module.exports = (db) => {
   router.delete('/:postid/post/delete', (req, res) => {
     let err = { error: 'Failed to delete post' }
     const postID = req.params.postid
-
+    /*
+    postDB.findOne({ _id: new ObjectId(postID) }).then((post) => {
+      if (!post.shared_post) {
+        postDB
+          .deleteOne({ _id: new ObjectId(postID) })
+          .then(() => {
+            res.status(200).json({ message: 'Shared Post Removed Successfully' })
+          })
+          .catch(() => {
+            res.status(404).json(err)
+          })
+        return
+      }
+*/
     postDB.findOne({ _id: new ObjectId(postID) }).then((post) => {
       usersDB.findOne(post.user_id).then((user) => {
         user.social.rank.exp -= 2
@@ -91,7 +114,6 @@ module.exports = (db) => {
         usersDB.updateOne({ _id: user._id }, { $set: user })
       })
     })
-
     postDB
       .deleteOne({ _id: new ObjectId(postID) })
       .then(() => {
@@ -292,5 +314,61 @@ module.exports = (db) => {
     })
   })
 
+  //share post
+  router.post('/:userid/post/share', (req, res) => {
+    let err = { error: 'Faild to share post' }
+    const postBody = req.body
+    const userID = req.params.userid
+
+    const incorrectFields = general.keysMustInclude(sharedTemplate, postBody)
+    if (incorrectFields.incorrect_keys.length || Object.keys(incorrectFields.incorrect_value_type).length) {
+      res.status(400).json({ error: 'Unmatched keys.', error_data: incorrectFields })
+      return
+    }
+    let filter = { _id: new ObjectId(postBody.shared_post.original_post) }
+    let update = {
+      $inc: { 'shares.count': 1 },
+      $push: { 'shares.users': userID },
+    }
+    postDB.findOne(filter).then((post) => {
+      if (post.shares.users.includes(userID)) {
+        let update2 = {
+          $inc: { 'shares.count': 1 },
+        }
+        postDB.updateOne(filter, update2)
+      } else {
+        postDB.updateOne(filter, update)
+      }
+    })
+    let originalOwner = { _id: new ObjectId(postBody.shared_post.original_owner) }
+
+    usersDB
+      .findOne(originalOwner)
+      .then((user) => {
+        user.social.rank.exp += 4
+        user.social.rank = general.checkRank(user.social.rank.exp)
+        usersDB.updateOne(originalOwner, { $set: user })
+        postBody.shared = true
+        postBody.user_id = new ObjectId(userID)
+        postBody.timestamp = new Date()
+        postBody.likes = {
+          count: 0,
+          users: [],
+        }
+        postBody.saves = {
+          count: 0,
+          users: [],
+        }
+        postBody.shares = {
+          count: 0,
+          users: [],
+        }
+        postDB.insertOne(postBody)
+        res.status(200).json({ message: 'Post Shared Successfully' })
+      })
+      .catch(() => {
+        res.status(404).json(err)
+      })
+  })
   return router
 }
