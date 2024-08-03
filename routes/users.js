@@ -80,8 +80,8 @@ module.exports = (db) => {
   // remove avatar uplaod
   router.delete('/:userid/avatar/remove', async (req, res) => {
     const userId = req.params.userid
-    if (req.body.avatar_url === avatar_url) {
-      res.status(200).json({ message: 'Success, already default' })
+    if (req.body.avatar_url === defaultAvatar) {
+      res.status(200).json({ message: 'removed file successfully' })
       return
     } else {
       const result = await general.removeFile(req.body.avatar_url)
