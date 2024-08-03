@@ -282,7 +282,7 @@ module.exports = (db) => {
   })
 
   // save post
-  router.get('/:postid/:userid/save', (req, res) => {
+  router.post('/:postid/:userid/save', (req, res) => {
     const userId = req.params.userid
     const postId = req.params.postid
 
@@ -300,11 +300,7 @@ module.exports = (db) => {
           postCreator.social.rank = general.checkRank(postCreator.social.rank.exp)
           postDB.updateOne({ _id: new ObjectId(postId) }, { $set: post })
           usersDB.updateOne({ _id: new ObjectId(post.user_id) }, { $set: postCreator })
-
-          usersDB.findOne({ _id: new ObjectId(userId) }).then((user) => {
-            user.social.posts_saved.push(postId)
-            usersDB.updateOne({ _id: new ObjectId(userId) }, { $set: user })
-          })
+          usersDB.updateOne({ _id: new ObjectId(userId) }, { $push: { 'social.posts_saved': postId } })
           res.status(200).json(post)
         })
         .catch(() => {
@@ -314,7 +310,7 @@ module.exports = (db) => {
   })
 
   // unsave post
-  router.get('/:postid/:userid/unsave', (req, res) => {
+  router.delete('/:postid/:userid/unsave', (req, res) => {
     const userId = req.params.userid
     const postId = req.params.postid
 
@@ -336,11 +332,7 @@ module.exports = (db) => {
           postCreator.social.rank = general.checkRank(postCreator.social.rank.exp)
           postDB.updateOne({ _id: new ObjectId(postId) }, { $set: post })
           usersDB.updateOne({ _id: new ObjectId(post.user_id) }, { $set: postCreator })
-
-          usersDB.findOne({ _id: new ObjectId(userId) }).then((user) => {
-            user.social.posts_saved.pop(postId)
-            usersDB.updateOne({ _id: new ObjectId(userId) }, { $set: user })
-          })
+          usersDB.updateOne({ _id: new ObjectId(userId) }, { $pull: { 'social.posts_saved': postId } })
           res.status(200).json(post)
         })
         .catch(() => {
