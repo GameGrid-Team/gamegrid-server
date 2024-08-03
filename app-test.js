@@ -31,7 +31,6 @@ app.post('/api/user/insert', (req, res) => {
   usersDB
     .find()
     .forEach((user) => {
-      console.log('User', user)
       if (user.nickname === nickname) {
         err.nickCheck = 1
       }
@@ -161,7 +160,6 @@ app.get('/api/user/:id/posts', (req, res) => {
   postsDB
     .find({ userid: new ObjectId(userId) })
     .forEach((post) => {
-      console.log(post)
       postList.push(post)
     })
     .then(() => {

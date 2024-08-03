@@ -1,8 +1,9 @@
 const express = require('express')
-const { string } = require('joi')
 const { ObjectId } = require('mongodb')
 const general = require('../fixture/general_text')
 const router = express.Router()
+const multer = require('multer')
+const upload = multer({ storage: multer.memoryStorage() })
 
 module.exports = (db) => {
   const postDB = db.collection('posts')
@@ -85,24 +86,54 @@ module.exports = (db) => {
       })
   })
 
+  //insert file to post
+  router.post('/:postid/files/upload', upload.array('image'), async (req, res) => {
+    console.log('1')
+    const postId = req.params.postid
+    const files = req.files
+    const uploadResults = []
+    try {
+      for (const file of files) {
+        const result = await general.uploadFile(file)
+        uploadResults.push(result)
+      }
+      const allSuccessful = uploadResults.every((result) => result.success)
+
+      if (allSuccessful) {
+        // Assuming you want to store URLs of uploaded files in user document
+        const fileUrls = uploadResults.map((result) => result.downloadURL)
+        await postDB.updateOne(
+          { _id: new ObjectId(postId) },
+          { $set: { media: fileUrls } } // Change 'avatar' to 'avatars' for multiple URLs
+        )
+        res.status(200).json({ message: 'Files uploaded successfully', files: uploadResults })
+      } else {
+        res.status(400).json({ error: 'Some files failed to upload', results: uploadResults })
+      }
+    } catch {
+      console.error('Error occurred during file upload:', error)
+      res.status(500).json({ error: 'Internal Server Error XD' })
+    }
+  })
+
+  // remove files from post
+  router.delete('/:postid/files/remove', (req, res) => {
+    const postId = req.params.postid
+    req.body.media_urls.forEach(async (url) => {
+      const result = await general.removeFile(url)
+      if (!result.success) {
+        res.status(400).send(result.error)
+        return
+      }
+    })
+    postDB.updateOne({ _id: new ObjectId(postId) }, { $pullAll: { media: req.body.media_urls } })
+    res.status(200).json({ message: 'removed file successfully' })
+  })
+
   //Delete post
   router.delete('/:postid/post/delete', (req, res) => {
     let err = { error: 'Failed to delete post' }
     const postID = req.params.postid
-    /*
-    postDB.findOne({ _id: new ObjectId(postID) }).then((post) => {
-      if (!post.shared_post) {
-        postDB
-          .deleteOne({ _id: new ObjectId(postID) })
-          .then(() => {
-            res.status(200).json({ message: 'Shared Post Removed Successfully' })
-          })
-          .catch(() => {
-            res.status(404).json(err)
-          })
-        return
-      }
-*/
     postDB.findOne({ _id: new ObjectId(postID) }).then((post) => {
       usersDB.findOne(post.user_id).then((user) => {
         user.social.rank.exp -= 2
@@ -123,7 +154,6 @@ module.exports = (db) => {
         res.status(404).json(err)
       })
   })
-
   //get posts list by user_id
   router.get('/:userid/posts', (req, res) => {
     const userId = req.params.userid
@@ -132,7 +162,6 @@ module.exports = (db) => {
     postDB
       .find({ user_id: new ObjectId(userId) })
       .forEach((post) => {
-        console.log(post)
         postList.push(post)
       })
       .then(() => {
@@ -142,7 +171,6 @@ module.exports = (db) => {
         res.status(404).json({ error: 'Failed to fetch posts' })
       })
   })
-
   //get all posts
   router.get('/allposts', (req, res) => {
     let postList = []
