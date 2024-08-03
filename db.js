@@ -2,18 +2,11 @@ const { MongoClient } = require('mongodb')
 let dbConnection
 const uri = 'mongodb+srv://lioren:WkmPa3gtx4GU5KL3@cluster0.zcwf0na.mongodb.net/'
 
-// Import the functions you need from the SDKs you need
-// import { initializeApp } from 'firebase/app'
-// import { getAnalytics } from 'firebase/analytics'
-
 // Firebase importation
-const { initializeApp } = require('firebase/app')
+const { initializeApp, getApp, getApps } = require('firebase/app')
 const { getAnalytics } = require('firebase/analytics')
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+const { getAuth } = require('firebase/auth')
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: 'AIzaSyAyzPfwLGS6fLohdlAxuTlcvvbjduKq14E',
   authDomain: 'gamegrid-f4689.firebaseapp.com',
@@ -25,6 +18,7 @@ const firebaseConfig = {
 }
 // Initialize Firebase
 const fbapp = initializeApp(firebaseConfig)
+const auth = getAuth(fbapp)
 // const analytics = getAnalytics(fbapp)
 
 module.exports = {
@@ -41,4 +35,5 @@ module.exports = {
   },
   getDb: () => dbConnection,
   fbapp: () => fbapp,
+  auth: () => auth,
 }

@@ -89,7 +89,6 @@ module.exports = (db) => {
 
   //insert file to post
   router.post('/:postid/files/upload', upload.array('image'), async (req, res) => {
-    console.log('1')
     const postId = req.params.postid
     const files = req.files
     const uploadResults = []
@@ -99,14 +98,9 @@ module.exports = (db) => {
         uploadResults.push(result)
       }
       const allSuccessful = uploadResults.every((result) => result.success)
-
       if (allSuccessful) {
-        // Assuming you want to store URLs of uploaded files in user document
         const fileUrls = uploadResults.map((result) => result.downloadURL)
-        await postDB.updateOne(
-          { _id: new ObjectId(postId) },
-          { $set: { media: fileUrls } } // Change 'avatar' to 'avatars' for multiple URLs
-        )
+        await postDB.updateOne({ _id: new ObjectId(postId) }, { $set: { media: fileUrls } })
         res.status(200).json({ message: 'Files uploaded successfully', files: uploadResults })
       } else {
         res.status(400).json({ error: 'Some files failed to upload', results: uploadResults })
