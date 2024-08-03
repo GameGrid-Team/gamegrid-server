@@ -226,7 +226,7 @@ module.exports = (db) => {
           postDB.updateOne({ _id: new ObjectId(postId) }, { $set: post })
           usersDB.updateOne({ _id: new ObjectId(post.user_id) }, { $set: postCreator })
           usersDB.updateOne({ _id: new ObjectId(userId) }, { $push: { 'social.posts_liked': postId } })
-          res.status(200).json(post)
+          res.status(200).json({ message: 'post liked successfully' })
         })
         .catch(() => {
           res.status(400).json({ error: 'error' })
@@ -260,7 +260,7 @@ module.exports = (db) => {
           usersDB.updateOne({ _id: new ObjectId(post.user_id) }, { $set: postCreator })
           usersDB.updateOne({ _id: new ObjectId(userId) }, { $pull: { 'social.posts_liked': postId } })
 
-          res.status(200).json(post)
+          res.status(200).json({ message: 'post unliked successfully' })
         })
         .catch(() => {
           res.status(400).json({ error: 'error' })
@@ -358,6 +358,28 @@ module.exports = (db) => {
       const postList = await Promise.all(postPromises)
 
       res.status(200).json({ saved_post_list: postList })
+    } catch (err) {
+      console.error('Failed to fetch posts:', err)
+      res.status(400).json({ error: 'Failed to fetch posts' })
+    }
+  })
+  router.get('/:userid/liked', async (req, res) => {
+    const userId = req.params.userid
+
+    try {
+      const user = await usersDB.findOne({ _id: new ObjectId(userId) })
+
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' })
+      }
+
+      const postPromises = user.social.posts_liked.map((postid) =>
+        postDB.findOne({ _id: new ObjectId(postid) })
+      )
+
+      const postList = await Promise.all(postPromises)
+
+      res.status(200).json({ liked_post_list: postList })
     } catch (err) {
       console.error('Failed to fetch posts:', err)
       res.status(400).json({ error: 'Failed to fetch posts' })
