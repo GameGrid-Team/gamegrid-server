@@ -118,12 +118,14 @@ module.exports = (db) => {
     const userID = req.params.userid
     let newTemplate = templateJson
     newTemplate.bio = ''
-    newTemplate.social = {}
+    newTemplate.instagram = ''
+    newTemplate.facebook = ''
     const incorrectFields = general.areKeysIncluded(newTemplate, req.body)
     if (Object.keys(incorrectFields.inccorect_fields).length) {
       res.status(400).json({ error: 'Unmatched keys.', error_data: incorrectFields })
       return
     }
+
     //refactor for flags
     if (req.body.email) {
       const existingUser = await usersDB.findOne({ email: req.body.email })
