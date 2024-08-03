@@ -29,9 +29,14 @@ module.exports = (db) => {
       res.status(400).json({ error: 'Unmatched keys.', error_data: incorrectFields })
       return
     }
+
     const nickname = userBody.nickname
     const email = userBody.email
     const social = {
+      social_networks: [
+        { platform: 'Instagram', link: '' },
+        { platform: 'Facebook', link: '' },
+      ],
       followers: [],
       following: [],
       posts_saved: [],
@@ -40,6 +45,7 @@ module.exports = (db) => {
       total_saves: 0,
       rank: { rank_name: 'Rookie', exp: 0, next_rank: 5 },
     }
+    userBody.bio = 'Insert your bio'
     userBody.social = social
     userBody.avatar = defaultAvatar
     usersDB
@@ -111,7 +117,9 @@ module.exports = (db) => {
   //update user
   router.post('/:userid/update', async (req, res) => {
     const userID = req.params.userid
-    const incorrectFields = general.areKeysIncluded(templateJson, req.body)
+    let newTemplate = templateJson
+    newTemplate.bio = ''
+    const incorrectFields = general.areKeysIncluded(newTemplate, req.body)
     if (Object.keys(incorrectFields.inccorect_fields).length) {
       res.status(400).json({ error: 'Unmatched keys.', error_data: incorrectFields })
       return
