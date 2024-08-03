@@ -341,6 +341,7 @@ module.exports = (db) => {
     })
   })
 
+  // get users saved posts
   router.get('/:userid/saved', async (req, res) => {
     const userId = req.params.userid
 
@@ -363,6 +364,8 @@ module.exports = (db) => {
       res.status(400).json({ error: 'Failed to fetch posts' })
     }
   })
+
+  // get users liked posts
   router.get('/:userid/liked', async (req, res) => {
     const userId = req.params.userid
 
