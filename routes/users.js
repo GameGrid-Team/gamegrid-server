@@ -3,7 +3,10 @@ const { ObjectId } = require('mongodb')
 const router = express.Router()
 const general = require('../fixture/general_text')
 const multer = require('multer')
-
+const admin = require('firebase-admin')
+admin.initializeApp({
+  credential: admin.credential.applicationDefault(),
+})
 const upload = multer({ storage: multer.memoryStorage() })
 
 module.exports = (db) => {
