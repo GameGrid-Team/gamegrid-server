@@ -135,8 +135,7 @@ module.exports = (db) => {
   router.get('/leaderboard', async (req, res) => {
     try {
       const users = await usersDB.find().sort({ 'social.rank.exp': -1 }).toArray()
-      const leaderboard = users.map((user) => user._id.toString())
-      res.status(200).json({ users: leaderboard })
+      res.status(200).json({ users: users })
     } catch {
       res.status(500).json({ error: 'Failed to retrieve leaderboard' })
     }
