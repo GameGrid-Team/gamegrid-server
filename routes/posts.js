@@ -1,5 +1,4 @@
 const express = require('express')
-const { string } = require('joi')
 const { ObjectId } = require('mongodb')
 const general = require('../fixture/general_text')
 const router = express.Router()
@@ -123,7 +122,6 @@ module.exports = (db) => {
         res.status(404).json(err)
       })
   })
-
   //get posts list by user_id
   router.get('/:userid/posts', (req, res) => {
     const userId = req.params.userid
@@ -132,7 +130,6 @@ module.exports = (db) => {
     postDB
       .find({ user_id: new ObjectId(userId) })
       .forEach((post) => {
-        console.log(post)
         postList.push(post)
       })
       .then(() => {
@@ -142,7 +139,6 @@ module.exports = (db) => {
         res.status(404).json({ error: 'Failed to fetch posts' })
       })
   })
-
   //get all posts
   router.get('/allposts', (req, res) => {
     let postList = []
