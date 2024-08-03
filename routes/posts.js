@@ -65,6 +65,8 @@ module.exports = (db) => {
 
   //update post
   router.post('/:postid/post/update', (req, res) => {
+    //todo: change endpoint to this  /:postid/post/update that only owner can edit post
+
     let err = { error: 'Faild to update post' }
     const postID = req.params.postid
     const updateBody = req.body
@@ -148,6 +150,7 @@ module.exports = (db) => {
         res.status(404).json(err)
       })
   })
+
   //get posts list by user_id
   router.get('/:userid/posts', (req, res) => {
     const userId = req.params.userid
@@ -170,6 +173,7 @@ module.exports = (db) => {
     let postList = []
     postDB
       .find()
+      .sort({ timestamp: -1 })
       .forEach((post) => {
         postList.push(post)
       })
@@ -227,6 +231,7 @@ module.exports = (db) => {
           postCreator.social.rank = general.checkRank(postCreator.social.rank.exp)
           postDB.updateOne({ _id: new ObjectId(postId) }, { $set: post })
           usersDB.updateOne({ _id: new ObjectId(post.user_id) }, { $set: postCreator })
+          usersDB.updateOne({ _id: new ObjectId(userId) }, { $push: { 'social.posts_liked': postId } })
           res.status(200).json(post)
         })
         .catch(() => {
@@ -259,6 +264,7 @@ module.exports = (db) => {
 
           postDB.updateOne({ _id: new ObjectId(postId) }, { $set: post })
           usersDB.updateOne({ _id: new ObjectId(post.user_id) }, { $set: postCreator })
+          usersDB.updateOne({ _id: new ObjectId(userId) }, { $pull: { 'social.posts_liked': postId } })
 
           res.status(200).json(post)
         })
