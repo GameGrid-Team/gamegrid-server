@@ -80,12 +80,16 @@ module.exports = (db) => {
   // remove avatar uplaod
   router.delete('/:userid/avatar/remove', async (req, res) => {
     const userId = req.params.userid
-    const result = await general.removeFile(req.body.avatar_url)
-    if (result.success) {
-      usersDB.updateOne({ _id: new ObjectId(userId) }, { $set: { avatar: defaultAvatar } })
-      res.status(200).json({ message: 'removed file successfully' })
+    if (req.body.avatar_url === avatar_url) {
+      return
     } else {
-      res.status(400).send(result.error)
+      const result = await general.removeFile(req.body.avatar_url)
+      if (result.success) {
+        usersDB.updateOne({ _id: new ObjectId(userId) }, { $set: { avatar: defaultAvatar } })
+        res.status(200).json({ message: 'removed file successfully' })
+      } else {
+        res.status(400).send(result.error)
+      }
     }
   })
 
