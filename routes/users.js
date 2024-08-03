@@ -37,6 +37,7 @@ module.exports = (db) => {
       followers: [],
       following: [],
       posts_saved: [],
+      posts_liked: [],
       total_likes: 0,
       total_share: 0,
       total_saves: 0,
@@ -189,12 +190,12 @@ module.exports = (db) => {
     let err = { error: 'User does not exist' }
     let usersList = []
     try {
-      if (filter.firstname !== null && !filter.lastname) {
+      if (filter.firstname && !filter.lastname) {
         console.log('1')
         usersList = await usersDB.find({ first_name: filter.firstname }).toArray()
-        res.status(200).json({ search_results: liusersListst })
+        res.status(200).json({ search_results: usersList })
         return
-      } else if (!filter.firstname && filter.lastname !== null) {
+      } else if (!filter.firstname && filter.lastname) {
         console.log('2')
         usersList = await usersDB.find({ last_name: filter.lastname }).toArray()
         res.status(200).json({ search_results: usersList })
@@ -212,18 +213,29 @@ module.exports = (db) => {
     } catch {
       res.status(400).json({ error: 'Failed to fetch users' })
     }
-
-    // .then((array) => {
-    //   console.log(array)
-    //   res.status(200).json(user)
-    // })
-    // .catch(() => {
-    //   res.status(404).json(err)
-    // })
   })
 
   //all users data
   router.get('/all', (req, res) => {
+    ///// this is if we want to use the same endpoint to sort all by what i want
+    // const { rankExp } = req.query
+    // let filter = { rankExp }
+    // if (rankExp) filter.rankExp = rankExp
+    // {
+    //   usersDB
+    //     .find()
+    //     .sort({ 'social.rank.exp': -1 })
+    //     .forEach((user) => {
+    //       usersList.push(user)
+    //     })
+    //     .then(() => {
+    //       res.status(200).json({ users: usersList })
+    //     })
+    //     .catch(() => {
+    //       res.status(404).json(err)
+    //     })
+    // }
+
     let err = { error: 'Failed to fetch users' }
     let usersList = []
     usersDB

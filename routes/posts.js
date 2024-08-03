@@ -236,6 +236,7 @@ module.exports = (db) => {
           postCreator.social.rank = general.checkRank(postCreator.social.rank.exp)
           postDB.updateOne({ _id: new ObjectId(postId) }, { $set: post })
           usersDB.updateOne({ _id: new ObjectId(post.user_id) }, { $set: postCreator })
+          usersDB.updateOne({ _id: new ObjectId(userId) }, { $push: { 'social.posts_liked': postId } })
           res.status(200).json(post)
         })
         .catch(() => {
@@ -268,6 +269,7 @@ module.exports = (db) => {
 
           postDB.updateOne({ _id: new ObjectId(postId) }, { $set: post })
           usersDB.updateOne({ _id: new ObjectId(post.user_id) }, { $set: postCreator })
+          usersDB.updateOne({ _id: new ObjectId(userId) }, { $pull: { 'social.posts_liked': postId } })
 
           res.status(200).json(post)
         })
