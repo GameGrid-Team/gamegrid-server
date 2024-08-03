@@ -151,11 +151,23 @@ module.exports = (db) => {
   })
 
   //certain users data
-  router.get('/:userid/data', (req, res) => {
+  router.get('/:userid/id/data', (req, res) => {
     let err = { error: 'User does not exist' }
     const userID = req.params.userid
     usersDB
       .findOne({ _id: new ObjectId(userID) })
+      .then((user) => {
+        res.status(200).json(user)
+      })
+      .catch(() => {
+        res.status(404).json(err)
+      })
+  })
+  router.get('/:nickname/nickname/data', (req, res) => {
+    let err = { error: 'User does not exist' }
+    const nickname = req.params.nickname
+    usersDB
+      .findOne({ _id: new ObjectId(nickname) })
       .then((user) => {
         res.status(200).json(user)
       })
