@@ -19,6 +19,7 @@ module.exports = (db) => {
     email: '',
     birth_date: '',
   }
+
   //insert user
   router.post('/insert', (req, res) => {
     let err = { error: 'The value of the fields equal to 1 are taken', emailCheck: 0, nickCheck: 0 }
@@ -29,13 +30,12 @@ module.exports = (db) => {
       res.status(400).json({ error: 'Unmatched keys.', error_data: incorrectFields })
       return
     }
+
     const nickname = userBody.nickname
     const email = userBody.email
     const social = {
-      social_networks: [
-        { platform: 'Instagram', link: '' },
-        { platform: 'Facebook', link: '' },
-      ],
+      instagram: '',
+      facebook: '',
       followers: [],
       following: [],
       posts_saved: [],
@@ -118,6 +118,8 @@ module.exports = (db) => {
     const userID = req.params.userid
     let newTemplate = templateJson
     newTemplate.bio = ''
+    newTemplate.instagram = ''
+    newTemplate.facebook = ''
     const incorrectFields = general.areKeysIncluded(newTemplate, req.body)
     if (Object.keys(incorrectFields.inccorect_fields).length) {
       res.status(400).json({ error: 'Unmatched keys.', error_data: incorrectFields })
@@ -138,7 +140,6 @@ module.exports = (db) => {
         return
       }
     }
-
     usersDB
       .updateOne({ _id: new ObjectId(userID) }, { $set: req.body })
       .then(() => {
@@ -177,21 +178,35 @@ module.exports = (db) => {
       })
   })
 
-  // // // get user by first/last-names
-  // router.get('/names/data', (req, res) => {
-  //   let err = { error: 'User does not exist' }
-  //   const name = req.params.name
-  //   usersDB
-  //     .find({ _id: new ObjectId(name) })
-  //     .toArray()
-  //     .then((array) => {
-  //       console.log(array)
-  //       res.status(200).json(user)
-  //     })
-  //     .catch(() => {
-  //       res.status(404).json(err)
-  //     })
-  // })
+  // // get user by first/last-names
+  router.get('/names/list/data', async (req, res) => {
+    // quesry = /api/login?firstname=naruto&lastname=idiot
+    const { lastname, firstname } = req.query
+    let filter = {}
+    if (lastname) filter.lastname = lastname
+    if (firstname) filter.firstname = firstname
+    let err = { error: 'User does not exist' }
+
+    console.log(filter.firstname)
+    console.log(!filter.lastname)
+    if (filter.firstname !== null && !filter.lastname) {
+      const list = await usersDB.find({ first_name: filter.firstname }).toArray()
+      res.status(200).json({ search_results: list })
+      return
+    } else if (!filter.firstname && filter.lastname !== null) {
+      const list = await usersDB.find({ last_name: filter.lastname }).toArray()
+      res.status(200).json({ search_results: list })
+      return
+    }
+
+    // .then((array) => {
+    //   console.log(array)
+    //   res.status(200).json(user)
+    // })
+    // .catch(() => {
+    //   res.status(404).json(err)
+    // })
+  })
 
   //all users data
   router.get('/all', (req, res) => {
