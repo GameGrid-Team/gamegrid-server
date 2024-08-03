@@ -189,18 +189,12 @@ module.exports = (db) => {
   router.get('/:userid/following/posts', (req, res) => {
     const userId = req.params.userid
     let postList = []
-
     usersDB
       .findOne({ _id: new ObjectId(userId) })
       .then((user) => {
-        // if (!user || !user.social || !user.social.following) {
-        //   throw new Error('User or followers not found')
-        // }
-
         const postPromises = user.social.following.map((follower) => {
           return postDB.find({ user_id: new ObjectId(follower) }).toArray()
         })
-
         return Promise.all(postPromises)
       })
       .then((postsArrays) => {
