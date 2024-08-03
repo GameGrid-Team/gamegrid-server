@@ -29,7 +29,7 @@ app.get('/api/about', (req, res) => {
 })
 
 app.get('/api/ping', (req, res) => {
-  res.json(['pong I LOVE U 7'])
+  res.json(['pong I LOVE U 3'])
 })
 
 app.post('/api/login', (req, res) => {

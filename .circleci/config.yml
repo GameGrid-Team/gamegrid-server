@@ -43,6 +43,9 @@ jobs:
             set -o pipefail
             node app.js &
             npx cypress run
+      - run:
+          name: deploy app
+          command: curl "https://api.render.com/deploy/srv-cqehsuo8fa8c73e7kl3g?key=rD4qtc_Ln9Q"
 
 workflows:
   version: 2
