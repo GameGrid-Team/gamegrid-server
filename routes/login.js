@@ -13,7 +13,6 @@ module.exports = (db) => {
     let filter = { password }
     if (email) filter.email = email
     if (nickname) filter.nickname = nickname
-    console.log(filter)
     usersDB
       .findOne(filter)
       .then((user) => {

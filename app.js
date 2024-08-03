@@ -1,3 +1,4 @@
+// import multer from 'multer'
 const express = require('express')
 const Joi = require('joi')
 const cors = require('cors')
@@ -5,6 +6,7 @@ const { connectToDb, getDb } = require('./db')
 const { ObjectId } = require('mongodb')
 const app = express()
 const general = require('./fixture/general_text')
+const multer = require('multer')
 app.use(express.json())
 app.use(cors())
 let db

@@ -1,15 +1,34 @@
 const express = require('express')
 const { ObjectId } = require('mongodb')
 const router = express.Router()
+const general = require('../fixture/general_text')
+const multer = require('multer')
+
+const upload = multer({ storage: multer.memoryStorage() })
 
 module.exports = (db) => {
+  const defaultAvatar =
+    'https://firebasestorage.googleapis.com/v0/b/gamegrid-f4689.appspot.com/o/files%2FHi6ytdtPudm74vacZe9mAi-1200-80-removebg-preview.png?alt=media&token=b701754a-d52c-4b60-bfd8-6a44a88f3bfd'
   const usersDB = db.collection('users')
-  const usersSocialDB = db.collection('usersSocial')
-
+  const templateJson = {
+    nickname: '',
+    first_name: '',
+    last_name: '',
+    password: '',
+    gender: '',
+    email: '',
+    birth_date: '',
+  }
   //insert user
   router.post('/insert', (req, res) => {
     let err = { error: 'The value of the fields equal to 1 are taken', emailCheck: 0, nickCheck: 0 }
+
     const userBody = req.body
+    const incorrectFields = general.keysMustInclude(templateJson, userBody)
+    if (incorrectFields.incorrect_keys.length || Object.keys(incorrectFields.incorrect_value_type).length) {
+      res.status(400).json({ error: 'Unmatched keys.', error_data: incorrectFields })
+      return
+    }
     const nickname = userBody.nickname
     const email = userBody.email
     const social = {
@@ -22,6 +41,7 @@ module.exports = (db) => {
       rank: { rank_name: 'Rookie', exp: 0, next_rank: 5 },
     }
     userBody.social = social
+    userBody.avatar = defaultAvatar
     usersDB
       .find()
       .forEach((user) => {
@@ -45,12 +65,35 @@ module.exports = (db) => {
       })
   })
 
+  //insert user Avatar
+  router.post('/:userid/avatar/upload', upload.single('image'), async (req, res) => {
+    const userId = req.params.userid
+    const result = await general.uploadFile(req.file)
+    if (result.success) {
+      usersDB.updateOne({ _id: new ObjectId(userId) }, { $set: { avatar: result.downloadURL } })
+      res.status(200).json({ message: 'Avatar set successfully', file: result })
+    } else {
+      res.status(400).json({ error: 'Avatar failed to upload' })
+    }
+  })
+
+  // remove avatar uplaod
+  router.delete('/:userid/avatar/remove', async (req, res) => {
+    const userId = req.params.userid
+    const result = await general.removeFile(req.body.avatar_url)
+    if (result.success) {
+      usersDB.updateOne({ _id: new ObjectId(userId) }, { $set: { avatar: defaultAvatar } })
+      res.status(200).json({ message: 'removed file successfully' })
+    } else {
+      res.status(400).send(result.error)
+    }
+  })
+
   //user deletion
   router.delete('/:userid/delete', (req, res) => {
     let err = { error: 'User does not exist' }
     const userID = req.params.userid
     usersDB
-
       .deleteOne({ _id: new ObjectId(userID) })
       .then(() => {
         res.status(200).json({ message: 'User Removed Successfully' })
@@ -61,8 +104,29 @@ module.exports = (db) => {
   })
 
   //update user
-  router.post('/:userid/update', (req, res) => {
+  router.post('/:userid/update', async (req, res) => {
     const userID = req.params.userid
+    const incorrectFields = general.areKeysIncluded(templateJson, req.body)
+    if (Object.keys(incorrectFields.inccorect_fields).length) {
+      res.status(400).json({ error: 'Unmatched keys.', error_data: incorrectFields })
+      return
+    }
+    //refactor for flags
+    if (req.body.email) {
+      const existingUser = await usersDB.findOne({ email: req.body.email })
+      if (existingUser !== null) {
+        res.status(400).json({ message: 'Email is taken' })
+        return
+      }
+    }
+    if (req.body.nickname) {
+      const existingUser = await usersDB.findOne({ nickname: req.body.nickname })
+      if (existingUser !== null) {
+        res.status(400).json({ message: 'Nickname is taken' })
+        return
+      }
+    }
+
     usersDB
       .updateOne({ _id: new ObjectId(userID) }, { $set: req.body })
       .then(() => {
@@ -72,6 +136,7 @@ module.exports = (db) => {
         res.status(404).json({ error: 'Update Failed' })
       })
   })
+
   //certain users data
   router.get('/:userid/data', (req, res) => {
     let err = { error: 'User does not exist' }

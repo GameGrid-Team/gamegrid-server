@@ -1,3 +1,8 @@
+const { fbapp } = require('../db')
+const { getStorage, ref, deleteObject, getDownloadURL, uploadBytesResumable } = require('firebase/storage')
+const fb = fbapp
+const storage = getStorage()
+
 let aboutTxt = `About Page Content for GameGrid
 About GameGrid
 Welcome to GameGrid (GG), the ultimate social media platform designed specifically for gamers! Our mission is to create a vibrant and engaging community where gamers from all around the world can connect, share, and compete. With features tailored to enhance the gaming experience, GameGrid is more than just a social network; it's a hub for gamers to thrive.
@@ -22,15 +27,87 @@ Join us on this exciting journey and be a part of the GameGrid community!
 
 Feel free to modify any section to better suit your team's needs or to add more information about your project.`
 
+function checkRankLevel(exp) {
+  if (exp >= 0 && exp < 5) return { rank_name: 'Rookie', exp: exp, next_rank: 5 }
+  if (exp >= 5 && exp < 10) return { rank_name: 'Adventurer', exp: exp, next_rank: 10 }
+  if (exp >= 10 && exp < 15) return { rank_name: 'Veteran', exp: exp, next_rank: 15 }
+  if (exp >= 15 && exp < 20) return { rank_name: 'Epic', exp: exp, next_rank: 20 }
+  if (exp >= 20 && exp < 25) return { rank_name: 'Elite', exp: exp, next_rank: 25 }
+  if (exp >= 25 && exp < 30) return { rank_name: 'Mythic', exp: exp, next_rank: 30 }
+  if (exp >= 30) return { rank_name: 'Immortal', exp: exp, next_rank: 10000000 }
+}
+
+//for insert- force including all fields and also checks for wrong ones.
+function keysMustInclude(originalJson, clientJson) {
+  const originalKeys = Object.keys(originalJson)
+  const clientKeys = Object.keys(clientJson)
+  const incorrectKeys = clientKeys.filter((key) => !originalKeys.includes(key))
+  const incorrectValueType = {}
+  originalKeys.forEach((key) => {
+    if (clientKeys.includes(key)) {
+      const originalType = Array.isArray(originalJson[key]) ? 'array' : typeof originalJson[key]
+      const clientType = Array.isArray(clientJson[key]) ? 'array' : typeof clientJson[key]
+
+      if (originalType !== clientType) {
+        incorrectValueType[key] = `expected ${originalType}, got ${clientType}`
+      }
+    }
+  })
+  return {
+    incorrect_keys: incorrectKeys,
+    incorrect_value_type: incorrectValueType,
+    expected_keys: originalKeys,
+  }
+}
+
+//for update - dont force to insert all fields, just checks.
+function areKeysIncluded(originalJson, clientJson) {
+  const originalKeys = Object.keys(originalJson)
+  const clientKeys = Object.keys(clientJson)
+  const extraInClient = clientKeys.filter((key) => !originalKeys.includes(key))
+  return {
+    inccorect_fields: extraInClient,
+    expected_keys: originalKeys,
+  }
+}
+
+const uploadFile = async (file) => {
+  try {
+    const dateTime = giveCurrentDateTime()
+    const storageRef = ref(storage, `files/${file.originalname + ' ' + dateTime}`)
+    const metadata = {
+      contentType: file.mimetype,
+    }
+    const snapshot = await uploadBytesResumable(storageRef, file.buffer, metadata)
+    const downloadURL = await getDownloadURL(snapshot.ref)
+    return { success: true, downloadURL, name: file.originalname, type: file.mimetype }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+}
+
+const removeFile = async (fileUrl) => {
+  try {
+    const fileRef = ref(storage, fileUrl)
+    await deleteObject(fileRef)
+    return { success: true, message: 'File successfully deleted.' }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+}
+
+const giveCurrentDateTime = () => {
+  const today = new Date()
+  const date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate()
+  const time = today.getHours() + ':' + today.getMinutes() + ':' + today.getSeconds()
+  const dateTime = date + ' ' + time
+  return dateTime
+}
 module.exports = {
   aboutTxt,
-  checkRank: function checkRankLevel(exp) {
-    if (exp >= 0 && exp < 5) return { rank_name: 'Rookie', exp: exp, next_rank: 5 }
-    if (exp >= 5 && exp < 10) return { rank_name: 'Adventurer', exp: exp, next_rank: 10 }
-    if (exp >= 10 && exp < 15) return { rank_name: 'Veteran', exp: exp, next_rank: 15 }
-    if (exp >= 15 && exp < 20) return { rank_name: 'Epic', exp: exp, next_rank: 20 }
-    if (exp >= 20 && exp < 25) return { rank_name: 'Elite', exp: exp, next_rank: 25 }
-    if (exp >= 25 && exp < 30) return { rank_name: 'Mythic', exp: exp, next_rank: 30 }
-    if (exp >= 30) return { rank_name: 'Immortal', exp: exp, next_rank: 10000000 }
-  },
+  checkRank: checkRankLevel,
+  keysMustInclude: keysMustInclude,
+  areKeysIncluded: areKeysIncluded,
+  uploadFile,
+  removeFile,
 }
