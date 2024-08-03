@@ -29,7 +29,6 @@ module.exports = (db) => {
       res.status(400).json({ error: 'Unmatched keys.', error_data: incorrectFields })
       return
     }
-
     const nickname = userBody.nickname
     const email = userBody.email
     const social = {
@@ -150,8 +149,8 @@ module.exports = (db) => {
       })
   })
 
-  //certain users data
-  router.get('/:userid/id/data', (req, res) => {
+  // get user by id
+  router.get('/:userid/data', (req, res) => {
     let err = { error: 'User does not exist' }
     const userID = req.params.userid
     usersDB
@@ -163,11 +162,13 @@ module.exports = (db) => {
         res.status(404).json(err)
       })
   })
+
+  // get user by nickname
   router.get('/:nickname/nickname/data', (req, res) => {
     let err = { error: 'User does not exist' }
     const nickname = req.params.nickname
     usersDB
-      .findOne({ _id: new ObjectId(nickname) })
+      .findOne({ nickname: nickname })
       .then((user) => {
         res.status(200).json(user)
       })
@@ -175,6 +176,22 @@ module.exports = (db) => {
         res.status(404).json(err)
       })
   })
+
+  // // // get user by first/last-names
+  // router.get('/names/data', (req, res) => {
+  //   let err = { error: 'User does not exist' }
+  //   const name = req.params.name
+  //   usersDB
+  //     .find({ _id: new ObjectId(name) })
+  //     .toArray()
+  //     .then((array) => {
+  //       console.log(array)
+  //       res.status(200).json(user)
+  //     })
+  //     .catch(() => {
+  //       res.status(404).json(err)
+  //     })
+  // })
 
   //all users data
   router.get('/all', (req, res) => {

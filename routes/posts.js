@@ -65,6 +65,7 @@ module.exports = (db) => {
 
   //update post
   router.post('/:postid/post/update', (req, res) => {
+    //todo: change endpoint to this  /:postid/post/update that only owner can edit post
     let err = { error: 'Faild to update post' }
     const postID = req.params.postid
     const updateBody = req.body
@@ -154,6 +155,7 @@ module.exports = (db) => {
         res.status(404).json(err)
       })
   })
+
   //get posts list by user_id
   router.get('/:userid/posts', (req, res) => {
     const userId = req.params.userid
