@@ -7,6 +7,8 @@ const multer = require('multer')
 const upload = multer({ storage: multer.memoryStorage() })
 
 module.exports = (db) => {
+  const defaultAvatar =
+    'https://firebasestorage.googleapis.com/v0/b/gamegrid-f4689.appspot.com/o/files%2FHi6ytdtPudm74vacZe9mAi-1200-80-removebg-preview.png?alt=media&token=b701754a-d52c-4b60-bfd8-6a44a88f3bfd'
   const usersDB = db.collection('users')
   const templateJson = {
     nickname: '',
@@ -39,6 +41,7 @@ module.exports = (db) => {
       rank: { rank_name: 'Rookie', exp: 0, next_rank: 5 },
     }
     userBody.social = social
+    userBody.avatar = defaultAvatar
     usersDB
       .find()
       .forEach((user) => {
@@ -79,7 +82,7 @@ module.exports = (db) => {
     const userId = req.params.userid
     const result = await general.removeFile(req.body.avatar_url)
     if (result.success) {
-      usersDB.updateOne({ _id: new ObjectId(userId) }, { $set: { avatar: '' } })
+      usersDB.updateOne({ _id: new ObjectId(userId) }, { $set: { avatar: defaultAvatar } })
       res.status(200).json({ message: 'removed file successfully' })
     } else {
       res.status(400).send(result.error)
