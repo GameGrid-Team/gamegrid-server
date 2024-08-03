@@ -131,6 +131,17 @@ module.exports = (db) => {
     })
   })
 
+  //leadboard
+  router.get('/leaderboard', async (req, res) => {
+    try {
+      const users = await usersDB.find().sort({ 'social.rank.exp': -1 }).toArray()
+      const leaderboard = users.map((user) => user._id.toString())
+      res.status(200).json(leaderboard)
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to retrieve leaderboard' })
+    }
+  })
+
   //unfollow user
   router.post('/:userid/:unfollowid/unfollow', (req, res) => {
     let err = { error: 'error unfollowing user' }
@@ -198,7 +209,6 @@ module.exports = (db) => {
         return
       }
     }
-
     usersDB
       .updateOne({ _id: new ObjectId(userID) }, { $set: req.body })
       .then(() => {
