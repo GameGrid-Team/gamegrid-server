@@ -353,6 +353,29 @@ module.exports = (db) => {
     })
   })
 
+  router.get('/:userid/saved', async (req, res) => {
+    const userId = req.params.userid
+
+    try {
+      const user = await usersDB.findOne({ _id: new ObjectId(userId) })
+
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' })
+      }
+
+      const postPromises = user.social.posts_saved.map((postid) =>
+        postDB.findOne({ _id: new ObjectId(postid) })
+      )
+
+      const postList = await Promise.all(postPromises)
+
+      res.status(200).json({ saved_post_list: postList })
+    } catch (err) {
+      console.error('Failed to fetch posts:', err)
+      res.status(400).json({ error: 'Failed to fetch posts' })
+    }
+  })
+
   //share post
   router.post('/:userid/post/share', (req, res) => {
     let err = { error: 'Faild to share post' }
