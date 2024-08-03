@@ -75,7 +75,7 @@ module.exports = (db) => {
   })
 
   // remove avatar uplaod
-  router.delete('/:userid/avatar/remove', upload.single('image'), async (req, res) => {
+  router.delete('/:userid/avatar/remove', async (req, res) => {
     const userId = req.params.userid
     const result = await general.removeFile(req.body.avatar_url)
     if (result.success) {
