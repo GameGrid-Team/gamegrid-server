@@ -77,7 +77,7 @@ module.exports = (db) => {
     }
   })
 
-  // remove avatar uplaod
+  // remove avatar file
   router.delete('/:userid/avatar/remove', async (req, res) => {
     const userId = req.params.userid
     const result = await general.removeFile(req.body.avatar_url)
@@ -87,6 +87,62 @@ module.exports = (db) => {
     } else {
       res.status(400).send(result.error)
     }
+  })
+
+  //follow user
+  router.post('/:userid/:followid/follow', (req, res) => {
+    let err = { error: 'error following user' }
+    const followId = req.params.followid
+    const userId = req.params.userid
+    usersDB.findOne({ _id: new ObjectId(followId) }).then((follow) => {
+      if (follow.social.followers.includes(userId)) {
+        res.status(400).json({ error: 'You already followed this user.' })
+        return
+      }
+      usersDB.findOne({ _id: new ObjectId(userId) }).then((user) => {
+        if (user.social.following.includes(followId)) {
+          res.status(400).json({ error: 'User already in your following list.' })
+          return
+        }
+        usersDB
+          .updateOne({ _id: new ObjectId(followId) }, { $push: { 'social.followers': userId } })
+          .then(() => {
+            usersDB.updateOne({ _id: new ObjectId(userId) }, { $push: { 'social.following': followId } })
+            res.status(200).json({ message: 'User Followed Successfully' })
+          })
+          .catch(() => {
+            res.status(404).json(err)
+          })
+      })
+    })
+  })
+
+  //unfollow user
+  router.post('/:userid/:unfollowid/unfollow', (req, res) => {
+    let err = { error: 'error unfollowing user' }
+    const unfollowId = req.params.unfollowid
+    const userId = req.params.userid
+    usersDB.findOne({ _id: new ObjectId(unfollowId) }).then((unfollow) => {
+      if (!unfollow.social.followers.includes(userId)) {
+        res.status(400).json({ error: 'You already unfollowed this user.' })
+        return
+      }
+      usersDB.findOne({ _id: new ObjectId(userId) }).then((user) => {
+        if (!user.social.following.includes(unfollowId)) {
+          res.status(400).json({ error: 'User is not in your following list.' })
+          return
+        }
+        usersDB
+          .updateOne({ _id: new ObjectId(unfollowId) }, { $pull: { 'social.followers': userId } })
+          .then(() => {
+            usersDB.updateOne({ _id: new ObjectId(userId) }, { $pull: { 'social.following': unfollowId } })
+            res.status(200).json({ message: 'User unFollowed Successfully' })
+          })
+          .catch(() => {
+            res.status(404).json(err)
+          })
+      })
+    })
   })
 
   //user deletion
