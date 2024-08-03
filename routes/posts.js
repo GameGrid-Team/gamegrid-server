@@ -179,6 +179,7 @@ module.exports = (db) => {
     let postList = []
     postDB
       .find()
+      .sort({ timestamp: -1 })
       .forEach((post) => {
         postList.push(post)
       })
