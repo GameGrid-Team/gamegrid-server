@@ -32,6 +32,10 @@ module.exports = (db) => {
     const nickname = userBody.nickname
     const email = userBody.email
     const social = {
+      social_networks: [
+        { platform: 'Instagram', link: '' },
+        { platform: 'Facebook', link: '' },
+      ],
       followers: [],
       following: [],
       posts_saved: [],
@@ -40,6 +44,7 @@ module.exports = (db) => {
       total_saves: 0,
       rank: { rank_name: 'Rookie', exp: 0, next_rank: 5 },
     }
+    userBody.bio = 'Insert your bio'
     userBody.social = social
     userBody.avatar = defaultAvatar
     usersDB
@@ -80,12 +85,17 @@ module.exports = (db) => {
   // remove avatar uplaod
   router.delete('/:userid/avatar/remove', async (req, res) => {
     const userId = req.params.userid
-    const result = await general.removeFile(req.body.avatar_url)
-    if (result.success) {
-      usersDB.updateOne({ _id: new ObjectId(userId) }, { $set: { avatar: defaultAvatar } })
+    if (req.body.avatar_url === defaultAvatar) {
       res.status(200).json({ message: 'removed file successfully' })
+      return
     } else {
-      res.status(400).send(result.error)
+      const result = await general.removeFile(req.body.avatar_url)
+      if (result.success) {
+        usersDB.updateOne({ _id: new ObjectId(userId) }, { $set: { avatar: defaultAvatar } })
+        res.status(200).json({ message: 'removed file successfully' })
+      } else {
+        res.status(400).send(result.error)
+      }
     }
   })
 
@@ -106,7 +116,9 @@ module.exports = (db) => {
   //update user
   router.post('/:userid/update', async (req, res) => {
     const userID = req.params.userid
-    const incorrectFields = general.areKeysIncluded(templateJson, req.body)
+    let newTemplate = templateJson
+    newTemplate.bio = ''
+    const incorrectFields = general.areKeysIncluded(newTemplate, req.body)
     if (Object.keys(incorrectFields.inccorect_fields).length) {
       res.status(400).json({ error: 'Unmatched keys.', error_data: incorrectFields })
       return
@@ -137,7 +149,7 @@ module.exports = (db) => {
       })
   })
 
-  //certain users data
+  // get user by id
   router.get('/:userid/data', (req, res) => {
     let err = { error: 'User does not exist' }
     const userID = req.params.userid
@@ -150,6 +162,36 @@ module.exports = (db) => {
         res.status(404).json(err)
       })
   })
+
+  // get user by nickname
+  router.get('/:nickname/nickname/data', (req, res) => {
+    let err = { error: 'User does not exist' }
+    const nickname = req.params.nickname
+    usersDB
+      .findOne({ nickname: nickname })
+      .then((user) => {
+        res.status(200).json(user)
+      })
+      .catch(() => {
+        res.status(404).json(err)
+      })
+  })
+
+  // // // get user by first/last-names
+  // router.get('/names/data', (req, res) => {
+  //   let err = { error: 'User does not exist' }
+  //   const name = req.params.name
+  //   usersDB
+  //     .find({ _id: new ObjectId(name) })
+  //     .toArray()
+  //     .then((array) => {
+  //       console.log(array)
+  //       res.status(200).json(user)
+  //     })
+  //     .catch(() => {
+  //       res.status(404).json(err)
+  //     })
+  // })
 
   //all users data
   router.get('/all', (req, res) => {
