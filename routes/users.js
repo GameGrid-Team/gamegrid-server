@@ -34,8 +34,6 @@ module.exports = (db) => {
     const nickname = userBody.nickname
     const email = userBody.email
     const social = {
-      instagram: '',
-      facebook: '',
       followers: [],
       following: [],
       posts_saved: [],
@@ -47,6 +45,8 @@ module.exports = (db) => {
     userBody.bio = 'Insert your bio'
     userBody.social = social
     userBody.avatar = defaultAvatar
+    userBody.instagram = ''
+    userBody.facebook = ''
     usersDB
       .find()
       .forEach((user) => {
@@ -118,8 +118,7 @@ module.exports = (db) => {
     const userID = req.params.userid
     let newTemplate = templateJson
     newTemplate.bio = ''
-    newTemplate.instagram = ''
-    newTemplate.facebook = ''
+    newTemplate.social = {}
     const incorrectFields = general.areKeysIncluded(newTemplate, req.body)
     if (Object.keys(incorrectFields.inccorect_fields).length) {
       res.status(400).json({ error: 'Unmatched keys.', error_data: incorrectFields })
@@ -186,17 +185,30 @@ module.exports = (db) => {
     if (lastname) filter.lastname = lastname
     if (firstname) filter.firstname = firstname
     let err = { error: 'User does not exist' }
-
-    console.log(filter.firstname)
-    console.log(!filter.lastname)
-    if (filter.firstname !== null && !filter.lastname) {
-      const list = await usersDB.find({ first_name: filter.firstname }).toArray()
-      res.status(200).json({ search_results: list })
-      return
-    } else if (!filter.firstname && filter.lastname !== null) {
-      const list = await usersDB.find({ last_name: filter.lastname }).toArray()
-      res.status(200).json({ search_results: list })
-      return
+    let usersList = []
+    try {
+      if (filter.firstname !== null && !filter.lastname) {
+        console.log('1')
+        usersList = await usersDB.find({ first_name: filter.firstname }).toArray()
+        res.status(200).json({ search_results: liusersListst })
+        return
+      } else if (!filter.firstname && filter.lastname !== null) {
+        console.log('2')
+        usersList = await usersDB.find({ last_name: filter.lastname }).toArray()
+        res.status(200).json({ search_results: usersList })
+        return
+      } else if (!filter.firstname && !filter.lastname) {
+        console.log('3')
+        res.status(400).json({ error: 'No parameter query sent in the request' })
+        return
+      } else {
+        console.log('4')
+        usersList = await usersDB.find({ last_name: filter.lastname, first_name: filter.firstname }).toArray()
+        res.status(200).json({ search_results: usersList })
+        return
+      }
+    } catch {
+      res.status(400).json({ error: 'Failed to fetch users' })
     }
 
     // .then((array) => {
