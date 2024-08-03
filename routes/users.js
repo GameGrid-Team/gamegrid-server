@@ -101,13 +101,29 @@ module.exports = (db) => {
   })
 
   //update user
-  router.post('/:userid/update', (req, res) => {
+  router.post('/:userid/update', async (req, res) => {
     const userID = req.params.userid
     const incorrectFields = general.areKeysIncluded(templateJson, req.body)
-    if (incorrectFields.incorrect_keys.length || Object.keys(incorrectFields.incorrect_value_type).length) {
+    if (Object.keys(incorrectFields.inccorect_fields).length) {
       res.status(400).json({ error: 'Unmatched keys.', error_data: incorrectFields })
       return
     }
+    //refactor for flags
+    if (req.body.email) {
+      const existingUser = await usersDB.findOne({ email: req.body.email })
+      if (existingUser !== null) {
+        res.status(400).json({ message: 'Email is taken' })
+        return
+      }
+    }
+    if (req.body.nickname) {
+      const existingUser = await usersDB.findOne({ nickname: req.body.nickname })
+      if (existingUser !== null) {
+        res.status(400).json({ message: 'Nickname is taken' })
+        return
+      }
+    }
+
     usersDB
       .updateOne({ _id: new ObjectId(userID) }, { $set: req.body })
       .then(() => {
