@@ -66,6 +66,7 @@ module.exports = (db) => {
   //update post
   router.post('/:postid/post/update', (req, res) => {
     //todo: change endpoint to this  /:postid/post/update that only owner can edit post
+
     let err = { error: 'Faild to update post' }
     const postID = req.params.postid
     const updateBody = req.body
@@ -172,6 +173,7 @@ module.exports = (db) => {
     let postList = []
     postDB
       .find()
+      .sort({ timestamp: -1 })
       .forEach((post) => {
         postList.push(post)
       })
@@ -229,6 +231,7 @@ module.exports = (db) => {
           postCreator.social.rank = general.checkRank(postCreator.social.rank.exp)
           postDB.updateOne({ _id: new ObjectId(postId) }, { $set: post })
           usersDB.updateOne({ _id: new ObjectId(post.user_id) }, { $set: postCreator })
+          usersDB.updateOne({ _id: new ObjectId(userId) }, { $push: { 'social.posts_liked': postId } })
           res.status(200).json(post)
         })
         .catch(() => {
@@ -261,6 +264,7 @@ module.exports = (db) => {
 
           postDB.updateOne({ _id: new ObjectId(postId) }, { $set: post })
           usersDB.updateOne({ _id: new ObjectId(post.user_id) }, { $set: postCreator })
+          usersDB.updateOne({ _id: new ObjectId(userId) }, { $pull: { 'social.posts_liked': postId } })
 
           res.status(200).json(post)
         })
@@ -341,6 +345,29 @@ module.exports = (db) => {
           res.status(400).json({ error: 'error' })
         })
     })
+  })
+
+  router.get('/:userid/saved', async (req, res) => {
+    const userId = req.params.userid
+
+    try {
+      const user = await usersDB.findOne({ _id: new ObjectId(userId) })
+
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' })
+      }
+
+      const postPromises = user.social.posts_saved.map((postid) =>
+        postDB.findOne({ _id: new ObjectId(postid) })
+      )
+
+      const postList = await Promise.all(postPromises)
+
+      res.status(200).json({ saved_post_list: postList })
+    } catch (err) {
+      console.error('Failed to fetch posts:', err)
+      res.status(400).json({ error: 'Failed to fetch posts' })
+    }
   })
 
   //share post

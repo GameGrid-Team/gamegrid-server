@@ -22,6 +22,7 @@ module.exports = (db) => {
     email: '',
     birth_date: '',
   }
+
   //insert user
   router.post('/insert', (req, res) => {
     let err = { error: 'The value of the fields equal to 1 are taken', emailCheck: 0, nickCheck: 0 }
@@ -32,16 +33,14 @@ module.exports = (db) => {
       res.status(400).json({ error: 'Unmatched keys.', error_data: incorrectFields })
       return
     }
+
     const nickname = userBody.nickname
     const email = userBody.email
     const social = {
-      social_networks: [
-        { platform: 'Instagram', link: '' },
-        { platform: 'Facebook', link: '' },
-      ],
       followers: [],
       following: [],
       posts_saved: [],
+      posts_liked: [],
       total_likes: 0,
       total_share: 0,
       total_saves: 0,
@@ -50,6 +49,8 @@ module.exports = (db) => {
     userBody.bio = 'Insert your bio'
     userBody.social = social
     userBody.avatar = defaultAvatar
+    userBody.instagram = ''
+    userBody.facebook = ''
     usersDB
       .find()
       .forEach((user) => {
@@ -177,11 +178,14 @@ module.exports = (db) => {
     const userID = req.params.userid
     let newTemplate = templateJson
     newTemplate.bio = ''
+    newTemplate.instagram = ''
+    newTemplate.facebook = ''
     const incorrectFields = general.areKeysIncluded(newTemplate, req.body)
     if (Object.keys(incorrectFields.inccorect_fields).length) {
       res.status(400).json({ error: 'Unmatched keys.', error_data: incorrectFields })
       return
     }
+
     //refactor for flags
     if (req.body.email) {
       const existingUser = await usersDB.findOne({ email: req.body.email })
@@ -197,7 +201,6 @@ module.exports = (db) => {
         return
       }
     }
-
     usersDB
       .updateOne({ _id: new ObjectId(userID) }, { $set: req.body })
       .then(() => {
@@ -236,24 +239,62 @@ module.exports = (db) => {
       })
   })
 
-  // // // get user by first/last-names
-  // router.get('/names/data', (req, res) => {
-  //   let err = { error: 'User does not exist' }
-  //   const name = req.params.name
-  //   usersDB
-  //     .find({ _id: new ObjectId(name) })
-  //     .toArray()
-  //     .then((array) => {
-  //       console.log(array)
-  //       res.status(200).json(user)
-  //     })
-  //     .catch(() => {
-  //       res.status(404).json(err)
-  //     })
-  // })
+  // // get user by first/last-names
+  router.get('/names/list/data', async (req, res) => {
+    // quesry = /api/login?firstname=naruto&lastname=idiot
+    const { lastname, firstname } = req.query
+    let filter = {}
+    if (lastname) filter.lastname = lastname
+    if (firstname) filter.firstname = firstname
+    let err = { error: 'User does not exist' }
+    let usersList = []
+    try {
+      if (filter.firstname && !filter.lastname) {
+        console.log('1')
+        usersList = await usersDB.find({ first_name: filter.firstname }).toArray()
+        res.status(200).json({ search_results: usersList })
+        return
+      } else if (!filter.firstname && filter.lastname) {
+        console.log('2')
+        usersList = await usersDB.find({ last_name: filter.lastname }).toArray()
+        res.status(200).json({ search_results: usersList })
+        return
+      } else if (!filter.firstname && !filter.lastname) {
+        console.log('3')
+        res.status(400).json({ error: 'No parameter query sent in the request' })
+        return
+      } else {
+        console.log('4')
+        usersList = await usersDB.find({ last_name: filter.lastname, first_name: filter.firstname }).toArray()
+        res.status(200).json({ search_results: usersList })
+        return
+      }
+    } catch {
+      res.status(400).json({ error: 'Failed to fetch users' })
+    }
+  })
 
   //all users data
   router.get('/all', (req, res) => {
+    ///// this is if we want to use the same endpoint to sort all by what i want
+    // const { rankExp } = req.query
+    // let filter = { rankExp }
+    // if (rankExp) filter.rankExp = rankExp
+    // {
+    //   usersDB
+    //     .find()
+    //     .sort({ 'social.rank.exp': -1 })
+    //     .forEach((user) => {
+    //       usersList.push(user)
+    //     })
+    //     .then(() => {
+    //       res.status(200).json({ users: usersList })
+    //     })
+    //     .catch(() => {
+    //       res.status(404).json(err)
+    //     })
+    // }
+
     let err = { error: 'Failed to fetch users' }
     let usersList = []
     usersDB
