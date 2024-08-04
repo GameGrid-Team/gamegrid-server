@@ -44,7 +44,13 @@ module.exports = (db) => {
       total_likes: 0,
       total_share: 0,
       total_saves: 0,
-      rank: { rank_name: 'Rookie', exp: 0, next_rank: 5 },
+      rank: {
+        rank_name: 'Rookie',
+        exp: 0,
+        next_rank: 5,
+        rank_image_url:
+          'https://firebasestorage.googleapis.com/v0/b/gamegrid-f4689.appspot.com/o/files%2FRookie.png?alt=media&token=033466a9-eb0c-4c91-bd24-e0c248769f42',
+      },
     }
     userBody.bio = 'Insert your bio'
     userBody.social = social
@@ -256,25 +262,20 @@ module.exports = (db) => {
     let filter = {}
     if (lastname) filter.lastname = lastname
     if (firstname) filter.firstname = firstname
-    let err = { error: 'User does not exist' }
     let usersList = []
     try {
       if (filter.firstname && !filter.lastname) {
-        console.log('1')
         usersList = await usersDB.find({ first_name: filter.firstname }).toArray()
         res.status(200).json({ search_results: usersList })
         return
       } else if (!filter.firstname && filter.lastname) {
-        console.log('2')
         usersList = await usersDB.find({ last_name: filter.lastname }).toArray()
         res.status(200).json({ search_results: usersList })
         return
       } else if (!filter.firstname && !filter.lastname) {
-        console.log('3')
         res.status(400).json({ error: 'No parameter query sent in the request' })
         return
       } else {
-        console.log('4')
         usersList = await usersDB.find({ last_name: filter.lastname, first_name: filter.firstname }).toArray()
         res.status(200).json({ search_results: usersList })
         return
