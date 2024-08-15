@@ -12,6 +12,8 @@ const upload = multer({ storage: multer.memoryStorage() })
 module.exports = (db) => {
   const defaultAvatar =
     'https://firebasestorage.googleapis.com/v0/b/gamegrid-f4689.appspot.com/o/files%2FHi6ytdtPudm74vacZe9mAi-1200-80-removebg-preview.png?alt=media&token=b701754a-d52c-4b60-bfd8-6a44a88f3bfd'
+  const defaultRankPic =
+    'https://firebasestorage.googleapis.com/v0/b/gamegrid-f4689.appspot.com/o/files%2FRookie.png?alt=media&token=033466a9-eb0c-4c91-bd24-e0c248769f42'
   const usersDB = db.collection('users')
   const templateJson = {
     nickname: '',
@@ -44,7 +46,7 @@ module.exports = (db) => {
       total_likes: 0,
       total_share: 0,
       total_saves: 0,
-      rank: { rank_name: 'Rookie', exp: 0, next_rank: 5 },
+      rank: { rank_name: 'Rookie', exp: 0, next_rank: 5, rank_image_url: defaultRankPic },
     }
     userBody.bio = 'Insert your bio'
     userBody.social = social
