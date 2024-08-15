@@ -320,6 +320,36 @@ module.exports = (db) => {
       })
   })
 
+  // Search users by text
+  router.get('/search', async (req, res) => {
+    const searchText = req.query.text
+    if (!searchText) {
+      return res.status(400).json({ message: 'Search query is required' })
+    }
+
+    try {
+      const searchWords = searchText.split(' ').map((word) => new RegExp(word, 'i'))
+      const users = await usersDB
+        .find({
+          $or: [
+            { nickname: { $in: searchWords } },
+            { first_name: { $in: searchWords } },
+            { last_name: { $in: searchWords } },
+          ],
+        })
+        .project({
+          nickname: 1,
+          first_name: 1,
+          last_name: 1,
+          avatar: 1,
+        })
+        .toArray()
+      res.status(200).json({ users: users })
+    } catch (error) {
+      res.status(500).json({ message: 'Error fetching users', error })
+    }
+  })
+
   return router
 }
 
