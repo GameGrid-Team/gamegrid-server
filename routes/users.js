@@ -285,26 +285,7 @@ module.exports = (db) => {
   })
 
   //all users data
-  router.get('/all', (req, res) => {
-    ///// this is if we want to use the same endpoint to sort all by what i want
-    // const { rankExp } = req.query
-    // let filter = { rankExp }
-    // if (rankExp) filter.rankExp = rankExp
-    // {
-    //   usersDB
-    //     .find()
-    //     .sort({ 'social.rank.exp': -1 })
-    //     .forEach((user) => {
-    //       usersList.push(user)
-    //     })
-    //     .then(() => {
-    //       res.status(200).json({ users: usersList })
-    //     })
-    //     .catch(() => {
-    //       res.status(404).json(err)
-    //     })
-    // }
-
+  router.get('/all', (res) => {
     let err = { error: 'Failed to fetch users' }
     let usersList = []
     usersDB
@@ -318,6 +299,24 @@ module.exports = (db) => {
       .catch(() => {
         res.status(404).json(err)
       })
+  })
+
+  //get user following list
+  router.get('/:userid/list/following', async (req, res) => {
+    const userId = req.params.userid
+    try {
+      const user = await usersDB.findOne({ _id: new ObjectId(userId) })
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' })
+      }
+      const followingPromises = user.social.following.map((followingU) =>
+        usersDB.findOne({ _id: new ObjectId(followingU) })
+      )
+      const followingList = await Promise.all(followingPromises)
+      res.status(200).json({ following_list: followingList })
+    } catch (error) {
+      res.status(404).json({ error: `${('Error fetching following list:', error)}` })
+    }
   })
 
   // Search users by text
