@@ -22,7 +22,7 @@ module.exports = (db) => {
     },
   }
   //Insert post
-  router.post('/:userid/post/insert', (req, res) => {
+  router.post('/:userid/post/insert', async (req, res) => {
     let err = { error: 'Faild to upload post' }
     const postBody = req.body
     const incorrectFields = general.keysMustInclude(templateJson, postBody)
@@ -32,7 +32,7 @@ module.exports = (db) => {
     }
     usersDB
       .findOne({ _id: new ObjectId(req.params.userid) })
-      .then((user) => {
+      .then(async (user) => {
         user.social.rank.exp += 2
         user.social.rank = general.checkRank(user.social.rank.exp)
         usersDB.updateOne({ _id: new ObjectId(req.params.userid) }, { $set: user })
@@ -55,8 +55,8 @@ module.exports = (db) => {
           original_owner: '',
         }
         postBody.shared = false
-        postDB.insertOne(postBody)
-        res.status(200).json({ message: 'Post create Successfully' })
+        const new_post = await postDB.insertOne(postBody)
+        res.status(200).json({ message: 'Post create Successfully', post_id: new_post.insertedId })
       })
       .catch(() => {
         res.status(404).json(err)
