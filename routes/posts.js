@@ -106,9 +106,9 @@ module.exports = (db) => {
       } else {
         res.status(400).json({ error: 'Some files failed to upload', results: uploadResults })
       }
-    } catch {
+    } catch (error) {
       console.error('Error occurred during file upload:', error)
-      res.status(500).json({ error: 'Internal Server Error XD' })
+      res.status(500).json({ error: `Internal Server Error XD ${error}` })
     }
   })
 

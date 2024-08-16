@@ -172,16 +172,32 @@ module.exports = (db) => {
   })
 
   //user deletion
-  router.delete('/:userid/delete', (req, res) => {
-    let err = { error: 'User does not exist' }
+  router.delete('/:userid/delete', async (req, res) => {
+    let errUser = { error: 'User does not exist' }
+    let errAvatar = { error: 'failed to delete avatar' }
     const userID = req.params.userid
     usersDB
-      .deleteOne({ _id: new ObjectId(userID) })
-      .then(() => {
-        res.status(200).json({ message: 'User Removed Successfully' })
+      .findOneAndDelete({ _id: new ObjectId(userID) })
+      .then(async (user) => {
+        if (user === null) {
+          throw errUser
+        } else {
+          if (user.avatar !== defaultAvatar) {
+            console.log('great!')
+            const result = await general.removeFile('sacas')
+            if (result.success) {
+              res.status(200).json({ message: 'User Removed Successfully' })
+            } else {
+              throw errAvatar
+            }
+          } else {
+            console.log('notttgreat!')
+            res.status(200).json({ message: 'User Removed Successfully' })
+          }
+        }
       })
-      .catch(() => {
-        res.status(404).json(err)
+      .catch((error) => {
+        res.status(404).json(error)
       })
   })
 
