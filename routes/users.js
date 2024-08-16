@@ -237,55 +237,6 @@ module.exports = (db) => {
       })
   })
 
-  // get user by nickname
-  router.get('/:nickname/nickname/data', (req, res) => {
-    let err = { error: 'User does not exist' }
-    const nickname = req.params.nickname
-    usersDB
-      .findOne({ nickname: nickname })
-      .then((user) => {
-        res.status(200).json(user)
-      })
-      .catch(() => {
-        res.status(404).json(err)
-      })
-  })
-
-  // // get user by first/last-names
-  router.get('/names/list/data', async (req, res) => {
-    // quesry = /api/login?firstname=naruto&lastname=idiot
-    const { lastname, firstname } = req.query
-    let filter = {}
-    if (lastname) filter.lastname = lastname
-    if (firstname) filter.firstname = firstname
-    let err = { error: 'User does not exist' }
-    let usersList = []
-    try {
-      if (filter.firstname && !filter.lastname) {
-        console.log('1')
-        usersList = await usersDB.find({ first_name: filter.firstname }).toArray()
-        res.status(200).json({ search_results: usersList })
-        return
-      } else if (!filter.firstname && filter.lastname) {
-        console.log('2')
-        usersList = await usersDB.find({ last_name: filter.lastname }).toArray()
-        res.status(200).json({ search_results: usersList })
-        return
-      } else if (!filter.firstname && !filter.lastname) {
-        console.log('3')
-        res.status(400).json({ error: 'No parameter query sent in the request' })
-        return
-      } else {
-        console.log('4')
-        usersList = await usersDB.find({ last_name: filter.lastname, first_name: filter.firstname }).toArray()
-        res.status(200).json({ search_results: usersList })
-        return
-      }
-    } catch {
-      res.status(400).json({ error: 'Failed to fetch users' })
-    }
-  })
-
   //all users data
   router.get('/all', (res) => {
     let err = { error: 'Failed to fetch users' }
