@@ -106,9 +106,9 @@ module.exports = (db) => {
       } else {
         res.status(400).json({ error: 'Some files failed to upload', results: uploadResults })
       }
-    } catch {
+    } catch (error) {
       console.error('Error occurred during file upload:', error)
-      res.status(500).json({ error: 'Internal Server Error XD' })
+      res.status(500).json({ error: `Internal Server Error XD ${error}` })
     }
   })
 
@@ -131,7 +131,6 @@ module.exports = (db) => {
     try {
       const postID = req.params.postid
       const post = await postDB.findOne({ _id: new ObjectId(postID) })
-
       if (!post) {
         return res.status(404).json({ error: 'Post not found' })
       }
@@ -143,6 +142,21 @@ module.exports = (db) => {
       }
 
       // Adjust the user's rank/experience points
+
+      // Delete the post
+      console.log(post.media)
+      if (typeof post.media !== 'undefined') {
+        post.media.forEach(async (url) => {
+          const result = await general.removeFile(url)
+          if (!result.success) {
+            res.status(400).send(result.error)
+            return
+          }
+          console.log('removed')
+        })
+      }
+      await postDB.deleteOne({ _id: new ObjectId(postID) })
+
       user.social.rank.exp -= 2
       if (user.social.rank.exp < 0) {
         return res.status(400).json({ error: 'Exp cannot be lower than 0.' })
@@ -150,10 +164,6 @@ module.exports = (db) => {
 
       user.social.rank = general.checkRank(user.social.rank.exp)
       await usersDB.updateOne({ _id: user._id }, { $set: user })
-
-      // Delete the post
-      await postDB.deleteOne({ _id: new ObjectId(postID) })
-
       // Send success response
       res.status(200).json({ message: 'Post Removed Successfully' })
     } catch (error) {
