@@ -12,6 +12,8 @@ const upload = multer({ storage: multer.memoryStorage() })
 module.exports = (db) => {
   const defaultAvatar =
     'https://firebasestorage.googleapis.com/v0/b/gamegrid-f4689.appspot.com/o/files%2FHi6ytdtPudm74vacZe9mAi-1200-80-removebg-preview.png?alt=media&token=b701754a-d52c-4b60-bfd8-6a44a88f3bfd'
+  const defaultRankPic =
+    'https://firebasestorage.googleapis.com/v0/b/gamegrid-f4689.appspot.com/o/files%2FRookie.png?alt=media&token=033466a9-eb0c-4c91-bd24-e0c248769f42'
   const usersDB = db.collection('users')
   const templateJson = {
     nickname: '',
@@ -44,13 +46,7 @@ module.exports = (db) => {
       total_likes: 0,
       total_share: 0,
       total_saves: 0,
-      rank: {
-        rank_name: 'Rookie',
-        exp: 0,
-        next_rank: 5,
-        rank_image_url:
-          'https://firebasestorage.googleapis.com/v0/b/gamegrid-f4689.appspot.com/o/files%2FRookie.png?alt=media&token=033466a9-eb0c-4c91-bd24-e0c248769f42',
-      },
+      rank: { rank_name: 'Rookie', exp: 0, next_rank: 5, rank_image_url: defaultRankPic },
     }
     userBody.bio = 'Insert your bio'
     userBody.social = social
@@ -286,26 +282,7 @@ module.exports = (db) => {
   })
 
   //all users data
-  router.get('/all', (req, res) => {
-    ///// this is if we want to use the same endpoint to sort all by what i want
-    // const { rankExp } = req.query
-    // let filter = { rankExp }
-    // if (rankExp) filter.rankExp = rankExp
-    // {
-    //   usersDB
-    //     .find()
-    //     .sort({ 'social.rank.exp': -1 })
-    //     .forEach((user) => {
-    //       usersList.push(user)
-    //     })
-    //     .then(() => {
-    //       res.status(200).json({ users: usersList })
-    //     })
-    //     .catch(() => {
-    //       res.status(404).json(err)
-    //     })
-    // }
-
+  router.get('/all', (res) => {
     let err = { error: 'Failed to fetch users' }
     let usersList = []
     usersDB
@@ -319,6 +296,54 @@ module.exports = (db) => {
       .catch(() => {
         res.status(404).json(err)
       })
+  })
+
+  //get user following list
+  router.get('/:userid/list/following', async (req, res) => {
+    const userId = req.params.userid
+    try {
+      const user = await usersDB.findOne({ _id: new ObjectId(userId) })
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' })
+      }
+      const followingPromises = user.social.following.map((followingU) =>
+        usersDB.findOne({ _id: new ObjectId(followingU) })
+      )
+      const followingList = await Promise.all(followingPromises)
+      res.status(200).json({ following_list: followingList })
+    } catch (error) {
+      res.status(404).json({ error: `${('Error fetching following list:', error)}` })
+    }
+  })
+
+  // Search users by text
+  router.get('/search', async (req, res) => {
+    const searchText = req.query.text
+    if (!searchText) {
+      return res.status(400).json({ message: 'Search query is required' })
+    }
+
+    try {
+      const searchWords = searchText.split(' ').map((word) => new RegExp(word, 'i'))
+      const users = await usersDB
+        .find({
+          $or: [
+            { nickname: { $in: searchWords } },
+            { first_name: { $in: searchWords } },
+            { last_name: { $in: searchWords } },
+          ],
+        })
+        .project({
+          nickname: 1,
+          first_name: 1,
+          last_name: 1,
+          avatar: 1,
+        })
+        .toArray()
+      res.status(200).json({ users: users })
+    } catch (error) {
+      res.status(500).json({ message: 'Error fetching users', error })
+    }
   })
 
   return router

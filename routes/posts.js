@@ -127,28 +127,39 @@ module.exports = (db) => {
   })
 
   //Delete post
-  router.delete('/:postid/post/delete', (req, res) => {
-    let err = { error: 'Failed to delete post' }
-    const postID = req.params.postid
-    postDB.findOne({ _id: new ObjectId(postID) }).then((post) => {
-      usersDB.findOne(post.user_id).then((user) => {
-        user.social.rank.exp -= 2
-        if (user.social.rank.exp < 0) {
-          res.status(400).json({ error: 'Exp cannot be lower then 0.' })
-          return
-        }
-        user.social.rank = general.checkRank(user.social.rank.exp)
-        usersDB.updateOne({ _id: user._id }, { $set: user })
-      })
-    })
-    postDB
-      .deleteOne({ _id: new ObjectId(postID) })
-      .then(() => {
-        res.status(200).json({ message: 'Post Removed Successfully' })
-      })
-      .catch(() => {
-        res.status(404).json(err)
-      })
+  router.delete('/:postid/post/delete', async (req, res) => {
+    try {
+      const postID = req.params.postid
+      const post = await postDB.findOne({ _id: new ObjectId(postID) })
+
+      if (!post) {
+        return res.status(404).json({ error: 'Post not found' })
+      }
+
+      const user = await usersDB.findOne({ _id: post.user_id })
+
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' })
+      }
+
+      // Adjust the user's rank/experience points
+      user.social.rank.exp -= 2
+      if (user.social.rank.exp < 0) {
+        return res.status(400).json({ error: 'Exp cannot be lower than 0.' })
+      }
+
+      user.social.rank = general.checkRank(user.social.rank.exp)
+      await usersDB.updateOne({ _id: user._id }, { $set: user })
+
+      // Delete the post
+      await postDB.deleteOne({ _id: new ObjectId(postID) })
+
+      // Send success response
+      res.status(200).json({ message: 'Post Removed Successfully' })
+    } catch (error) {
+      console.error('Error deleting post:', error)
+      res.status(500).json({ error: 'Failed to delete post' })
+    }
   })
 
   //get posts list by user_id
