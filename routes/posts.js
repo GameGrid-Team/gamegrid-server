@@ -460,7 +460,7 @@ module.exports = (db) => {
           users: [],
         }
         postDB.insertOne(postBody)
-        res.status(200).json({ message: 'Post Shared Successfully' })
+        res.status(200).json({ message: 'Post Shared Successfully', post_owner_id: userID })
       })
       .catch(() => {
         res.status(404).json(err)

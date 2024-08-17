@@ -111,7 +111,6 @@ module.exports = (db) => {
       console.log(4)
       notifyJson.message = `${noter.nickname} followed you`
     }
-    console.log(notifyJson)
     usersDB
       .findOneAndUpdate(
         { _id: new ObjectId(userId) },
