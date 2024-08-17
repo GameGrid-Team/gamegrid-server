@@ -46,7 +46,7 @@ module.exports = (db) => {
       total_likes: 0,
       total_share: 0,
       total_saves: 0,
-      rank: { rank_name: 'Rookie', exp: 0, next_rank: 5, rank_image_url: defaultRankPic },
+      rank: { rank_name: 'Rookie', exp: 0, next_rank: 50, rank_image_url: defaultRankPic },
     }
     userBody.bio = 'Insert your bio'
     userBody.social = social
