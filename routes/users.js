@@ -53,6 +53,7 @@ module.exports = (db) => {
     userBody.avatar = defaultAvatar
     userBody.instagram = ''
     userBody.facebook = ''
+    userBody.notification = []
     usersDB
       .find()
       .forEach((user) => {
@@ -73,6 +74,60 @@ module.exports = (db) => {
       })
       .catch(() => {
         res.status(500).json({ error: "Couldn't onnect to DB" })
+      })
+  })
+
+  router.delete('/:userid/notification/clear', upload.single('image'), async (req, res) => {
+    const userId = req.params.userid
+    await usersDB
+      .updateOne({ _id: new ObjectId(userId) }, { $set: { notification: [] } })
+      .then(() => {
+        res.status(200).json({ message: 'Success' })
+      })
+      .catch(() => {
+        res.status(404).json({ error: 'error  updating notification' })
+      })
+  })
+
+  router.post('/:userid/:clickedid/notification/:notify', upload.single('image'), async (req, res) => {
+    const userId = req.params.userid
+    const notId = req.params.clickedid
+    const notifyType = req.params.notify
+    console.log(notifyType)
+    noter = await usersDB.findOne(new ObjectId(notId))
+    let notifyJson = {}
+    if (notifyType === 'like') {
+      console.log(1)
+      notifyJson.message = `${noter.nickname} liked your post`
+    } else if (notifyType === 'save') {
+      console.log(2)
+      notifyJson.message = `${noter.nickname} saved your post`
+    } else if (notifyType === 'share') {
+      console.log(3)
+      notifyJson.message = `${noter.nickname} shared your post`
+    } else if (notifyType === 'follow') {
+      console.log(4)
+      notifyJson.message = `111${noter.nickname} followed you`
+    }
+    console.log(notifyJson)
+    usersDB
+      .findOneAndUpdate(
+        { _id: new ObjectId(userId) },
+        {
+          $push: {
+            notification: {
+              $each: [notifyJson],
+              $position: 0,
+              $slice: 15,
+            },
+          },
+        }
+      )
+      .then((user) => {
+        res.status(200).json({ notification: user.notification })
+      })
+      .catch(() => {
+        res.status(404).json({ error: 'Not Found' })
       })
   })
 
