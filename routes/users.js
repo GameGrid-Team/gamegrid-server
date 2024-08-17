@@ -104,7 +104,7 @@ module.exports = (db) => {
     } else if (notifyType === 'save') {
       console.log(2)
       notifyJson.message = `${noter.nickname} saved your post`
-    } else if (notifyType === 'share') {
+    } else if (notifyType === 'shared') {
       console.log(3)
       notifyJson.message = `${noter.nickname} shared your post`
     } else if (notifyType === 'follow') {
