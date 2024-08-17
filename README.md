@@ -13,7 +13,7 @@ This is the backend server for GameGrid, a social network for gamers. It handles
 ### Installation
 1. Clone the repository:
     ```sh
-    git clone https://github.com/yourusername/gamegrid-server.git
+    git clone https://github.com/GameGrid-Team/gamegrid-server
     cd gamegrid-server
     ```
 
