@@ -141,10 +141,7 @@ module.exports = (db) => {
         return res.status(404).json({ error: 'User not found' })
       }
 
-      // Adjust the user's rank/experience points
-
       // Delete the post
-      console.log(post.media)
       if (typeof post.media !== 'undefined') {
         post.media.forEach(async (url) => {
           const result = await general.removeFile(url)
@@ -152,7 +149,6 @@ module.exports = (db) => {
             res.status(400).send(result.error)
             return
           }
-          console.log('removed')
         })
       }
       await postDB.deleteOne({ _id: new ObjectId(postID) })
@@ -460,7 +456,7 @@ module.exports = (db) => {
           users: [],
         }
         postDB.insertOne(postBody)
-        res.status(200).json({ message: 'Post Shared Successfully' })
+        res.status(200).json({ message: 'Post Shared Successfully', post_owner_id: originalOwner._id })
       })
       .catch(() => {
         res.status(404).json(err)

@@ -104,14 +104,13 @@ module.exports = (db) => {
     } else if (notifyType === 'save') {
       console.log(2)
       notifyJson.message = `${noter.nickname} saved your post`
-    } else if (notifyType === 'share') {
+    } else if (notifyType === 'shared') {
       console.log(3)
       notifyJson.message = `${noter.nickname} shared your post`
     } else if (notifyType === 'follow') {
       console.log(4)
-      notifyJson.message = `111${noter.nickname} followed you`
+      notifyJson.message = `${noter.nickname} followed you`
     }
-    console.log(notifyJson)
     usersDB
       .findOneAndUpdate(
         { _id: new ObjectId(userId) },
