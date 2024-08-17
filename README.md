@@ -40,8 +40,3 @@ This is the backend server for GameGrid, a social network for gamers. It handles
     ```sh
     npx cypress run
     ```
-
-## More Explanations About The Project
-- The server provides API endpoints for the client application.
-- The `/ping` endpoint can be used to check if the server is running.
-- The `/about` endpoint returns static content about the project.
