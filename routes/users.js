@@ -99,16 +99,12 @@ module.exports = (db) => {
     noter = await usersDB.findOne(new ObjectId(notId))
     let notifyJson = {}
     if (notifyType === 'like') {
-      console.log(1)
       notifyJson.message = `${noter.nickname} liked your post`
     } else if (notifyType === 'save') {
-      console.log(2)
       notifyJson.message = `${noter.nickname} saved your post`
     } else if (notifyType === 'shared') {
-      console.log(3)
       notifyJson.message = `${noter.nickname} shared your post`
     } else if (notifyType === 'follow') {
-      console.log(4)
       notifyJson.message = `${noter.nickname} followed you`
     }
     usersDB
