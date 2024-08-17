@@ -109,7 +109,7 @@ module.exports = (db) => {
       notifyJson.message = `${noter.nickname} shared your post`
     } else if (notifyType === 'follow') {
       console.log(4)
-      notifyJson.message = `111${noter.nickname} followed you`
+      notifyJson.message = `${noter.nickname} followed you`
     }
     console.log(notifyJson)
     usersDB
