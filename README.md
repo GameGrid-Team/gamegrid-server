@@ -25,7 +25,7 @@ This is the backend server for GameGrid, a social network for gamers. It handles
 ### Running the Server
 1. Start the server using nodemon:
     ```sh
-    npm start
+    npm run dev
     ```
 
 2. The server should now be running on `http://localhost:3001`.
