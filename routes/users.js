@@ -77,6 +77,7 @@ module.exports = (db) => {
       })
   })
 
+  //clear notifications
   router.delete('/:userid/notification/clear', upload.single('image'), async (req, res) => {
     const userId = req.params.userid
     await usersDB
@@ -89,6 +90,7 @@ module.exports = (db) => {
       })
   })
 
+  //add notification
   router.post('/:userid/:clickedid/notification/:notify', upload.single('image'), async (req, res) => {
     const userId = req.params.userid
     const notId = req.params.clickedid
