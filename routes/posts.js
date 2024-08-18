@@ -239,6 +239,7 @@ module.exports = (db) => {
           }
           post.likes.users.push(userId)
           postCreator.social.rank.exp += 1
+          postCreator.social.total_likes += 1
           postCreator.social.rank = general.checkRank(postCreator.social.rank.exp)
           postDB.updateOne({ _id: new ObjectId(postId) }, { $set: post })
           usersDB.updateOne({ _id: new ObjectId(post.user_id) }, { $set: postCreator })
@@ -314,6 +315,7 @@ module.exports = (db) => {
           }
           post.saves.users.push(userId)
           postCreator.social.rank.exp += 3
+          postCreator.social.total_saves += 1
           postCreator.social.rank = general.checkRank(postCreator.social.rank.exp)
           postDB.updateOne({ _id: new ObjectId(postId) }, { $set: post })
           usersDB.updateOne({ _id: new ObjectId(post.user_id) }, { $set: postCreator })
@@ -438,6 +440,7 @@ module.exports = (db) => {
       .findOne(originalOwner)
       .then((user) => {
         user.social.rank.exp += 4
+        user.social.rank.total_share += 1
         user.social.rank = general.checkRank(user.social.rank.exp)
         usersDB.updateOne(originalOwner, { $set: user })
         postBody.shared = true
