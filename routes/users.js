@@ -95,7 +95,6 @@ module.exports = (db) => {
     const userId = req.params.userid
     const notId = req.params.clickedid
     const notifyType = req.params.notify
-    console.log(notifyType)
     noter = await usersDB.findOne(new ObjectId(notId))
     let notifyJson = {}
     if (notifyType === 'like') {
