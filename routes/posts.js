@@ -440,7 +440,7 @@ module.exports = (db) => {
       .findOne(originalOwner)
       .then((user) => {
         user.social.rank.exp += 4
-        user.social.rank.total_share += 1
+        user.social.total_share += 1
         user.social.rank = general.checkRank(user.social.rank.exp)
         usersDB.updateOne(originalOwner, { $set: user })
         postBody.shared = true
